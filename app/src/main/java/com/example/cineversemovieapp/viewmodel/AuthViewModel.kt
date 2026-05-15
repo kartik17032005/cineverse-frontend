@@ -33,7 +33,7 @@ class AuthViewModel : ViewModel() {
     }
 
     // ── current logged in user id ──
-    private var currentUserId: Long = 0L       // 👈 NOT in companion object
+    private var currentUserId: Long = 0L
 
     fun setCurrentUserId(id: Long) {
         currentUserId = id
@@ -80,7 +80,6 @@ class AuthViewModel : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState
 
-    // store token after login/register
     private var jwtToken: String = ""
 
     fun getToken() = jwtToken
@@ -93,7 +92,7 @@ class AuthViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     val authResponse = response.body()!!
                     jwtToken = authResponse.token
-                    RetrofitInstance.token = authResponse.token  // 👈 set globally
+                    RetrofitInstance.token = authResponse.token
                     setCurrentUserId(authResponse.userId)
                     _loginState.value = LoginState.Success(authResponse.userId)
                 } else {
@@ -109,12 +108,21 @@ class AuthViewModel : ViewModel() {
         _loginState.value = LoginState.Idle
     }
 
+    fun logout() {
+        jwtToken = ""
+        RetrofitInstance.token = ""
+        currentUserId = 0L
+        _userProfile.value = UserProfileState.Idle
+        _watchlistIds.value = emptySet()
+        _watchlistState.value = WatchlistState.Idle
+    }
+
     // ── User Profile ──
     private val _userProfile = MutableStateFlow<UserProfileState>(UserProfileState.Idle)
     val userProfile: StateFlow<UserProfileState> = _userProfile
 
     fun getUserProfile() {
-        Log.d("AUTH", "fetching profile for userId: $currentUserId")
+        if (currentUserId == 0L) return
         viewModelScope.launch {
             _userProfile.value = UserProfileState.Loading
             try {
@@ -144,7 +152,7 @@ class AuthViewModel : ViewModel() {
                 )
                 if (response.isSuccessful) {
                     _updateState.value = UpdateState.Success
-                    getUserProfile()    // refresh profile after update
+                    getUserProfile()
                 } else {
                     _updateState.value = UpdateState.Error("Update failed")
                 }
@@ -158,22 +166,7 @@ class AuthViewModel : ViewModel() {
         _updateState.value = UpdateState.Idle
     }
 
-    // ── States ──
-    sealed class UserProfileState {
-        object Idle : UserProfileState()
-        object Loading : UserProfileState()
-        data class Success(val user: UserResponse) : UserProfileState()
-        data class Error(val message: String) : UserProfileState()
-    }
-
-    sealed class UpdateState {
-        object Idle : UpdateState()
-        object Loading : UpdateState()
-        object Success : UpdateState()
-        data class Error(val message: String) : UpdateState()
-    }
-
-    // ── Watchlist States ──
+    // ── Watchlist ──
     private val _watchlistState = MutableStateFlow<WatchlistState>(WatchlistState.Idle)
     val watchlistState: StateFlow<WatchlistState> = _watchlistState
 
@@ -183,8 +176,8 @@ class AuthViewModel : ViewModel() {
     private val _watchlistActionState = MutableStateFlow<WatchlistActionState>(WatchlistActionState.Idle)
     val watchlistActionState: StateFlow<WatchlistActionState> = _watchlistActionState
 
-    // ── Get Watchlist ──
     fun getWatchlist() {
+        if (currentUserId == 0L) return
         viewModelScope.launch {
             _watchlistState.value = WatchlistState.Loading
             try {
@@ -192,7 +185,6 @@ class AuthViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     val items = response.body() ?: emptyList()
                     _watchlistState.value = WatchlistState.Success(items)
-                    // store just the IDs for quick bookmark checking
                     _watchlistIds.value = items.map { it.tmdbId }.toSet()
                 } else {
                     _watchlistState.value = WatchlistState.Error("Failed to load watchlist")
@@ -203,7 +195,6 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    // ── Add to Watchlist ──
     fun addToWatchlist(
         tmdbId: Long,
         title: String?,
@@ -213,7 +204,6 @@ class AuthViewModel : ViewModel() {
         releaseYear: String,
         genre: String
     ) {
-        Log.d("WATCHLIST", "Adding movie: $title, userId: $currentUserId, tmdbId: $tmdbId")
         viewModelScope.launch {
             _watchlistActionState.value = WatchlistActionState.Loading
             try {
@@ -231,9 +221,8 @@ class AuthViewModel : ViewModel() {
                 )
                 if (response.isSuccessful) {
                     _watchlistActionState.value = WatchlistActionState.Added
-                    // update local ids set
                     _watchlistIds.value = _watchlistIds.value + tmdbId
-                    getWatchlist() // refresh list
+                    getWatchlist()
                 } else {
                     _watchlistActionState.value = WatchlistActionState.Error("Already in watchlist")
                 }
@@ -243,7 +232,6 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    // ── Remove from Watchlist ──
     fun removeFromWatchlist(tmdbId: Long) {
         viewModelScope.launch {
             _watchlistActionState.value = WatchlistActionState.Loading
@@ -251,9 +239,8 @@ class AuthViewModel : ViewModel() {
                 val response = repository.removeFromWatchlist(currentUserId, tmdbId)
                 if (response.isSuccessful) {
                     _watchlistActionState.value = WatchlistActionState.Removed
-                    // update local ids set
                     _watchlistIds.value = _watchlistIds.value - tmdbId
-                    getWatchlist() // refresh list
+                    getWatchlist()
                 } else {
                     _watchlistActionState.value = WatchlistActionState.Error("Failed to remove")
                 }
@@ -267,7 +254,21 @@ class AuthViewModel : ViewModel() {
         _watchlistActionState.value = WatchlistActionState.Idle
     }
 
-    // ── Watchlist States ──
+    // ── States ──
+    sealed class UserProfileState {
+        object Idle : UserProfileState()
+        object Loading : UserProfileState()
+        data class Success(val user: UserResponse) : UserProfileState()
+        data class Error(val message: String) : UserProfileState()
+    }
+
+    sealed class UpdateState {
+        object Idle : UpdateState()
+        object Loading : UpdateState()
+        object Success : UpdateState()
+        data class Error(val message: String) : UpdateState()
+    }
+
     sealed class WatchlistState {
         object Idle : WatchlistState()
         object Loading : WatchlistState()
@@ -282,20 +283,18 @@ class AuthViewModel : ViewModel() {
         object Removed : WatchlistActionState()
         data class Error(val message: String) : WatchlistActionState()
     }
-}
 
-// ── Login State ──
-sealed class LoginState {
-    object Idle : LoginState()
-    object Loading : LoginState()
-    data class Success(val userId: Long) : LoginState()  // 👈 fixed - has userId
-    data class Error(val message: String) : LoginState()
-}
+    sealed class LoginState {
+        object Idle : LoginState()
+        object Loading : LoginState()
+        data class Success(val userId: Long) : LoginState()
+        data class Error(val message: String) : LoginState()
+    }
 
-// ── Register State ──
-sealed class RegisterState {
-    object Idle : RegisterState()
-    object Loading : RegisterState()
-    object Success : RegisterState()                     // 👈 fixed - extends RegisterState
-    data class Error(val message: String) : RegisterState()
+    sealed class RegisterState {
+        object Idle : RegisterState()
+        object Loading : RegisterState()
+        object Success : RegisterState()
+        data class Error(val message: String) : RegisterState()
+    }
 }

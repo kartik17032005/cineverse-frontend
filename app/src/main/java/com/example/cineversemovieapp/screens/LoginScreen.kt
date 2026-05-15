@@ -54,7 +54,6 @@ import com.example.cineversemovieapp.components.InputTextField
 import com.example.cineversemovieapp.components.bannerItems.FeatureItem
 import com.example.cineversemovieapp.navigation.Routes
 import com.example.cineversemovieapp.viewmodel.AuthViewModel
-import com.example.cineversemovieapp.viewmodel.LoginState
 
 @Composable
 fun LoginScreen(
@@ -83,7 +82,7 @@ fun LoginScreen(
     // ── React to state changes ──
     LaunchedEffect(loginState) {
         when (loginState) {
-            is LoginState.Success -> {
+            is AuthViewModel.LoginState.Success -> {
                 navController.navigate(Routes.Home.route) {
                     popUpTo("login") { inclusive = true }
                 }
@@ -225,9 +224,9 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ── API error message ──
-            if (loginState is LoginState.Error) {
+            if (loginState is AuthViewModel.LoginState.Error) {
                 ErrorText(
-                    message = (loginState as LoginState.Error).message,
+                    message = (loginState as AuthViewModel.LoginState.Error).message,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
@@ -248,7 +247,7 @@ fun LoginScreen(
                         )
                     }
                 },
-                enabled = loginState !is LoginState.Loading,
+                enabled = loginState !is AuthViewModel.LoginState.Loading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -265,7 +264,7 @@ fun LoginScreen(
                     hoveredElevation = 12.dp
                 )
             ) {
-                if (loginState is LoginState.Loading) {
+                if (loginState is AuthViewModel.LoginState.Loading) {
                     Text(
                         text = "SIGNING IN...",
                         fontFamily = bebasNeue,

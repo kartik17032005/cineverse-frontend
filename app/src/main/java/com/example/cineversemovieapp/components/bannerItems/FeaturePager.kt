@@ -13,16 +13,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.cineversemovieapp.data.TmdbMovie
 import com.example.cineversemovieapp.models.Movie
 import com.example.cineversemovieapp.ui.theme.gold
+import com.example.cineversemovieapp.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun FeaturedPager(
     movies: List<Any>, // Accepts both Movie and TmdbMovie
-    navController: NavController
+    navController: NavController,
+    authViewModel: AuthViewModel = viewModel()
 ) {
     if (movies.isEmpty()) return
 
@@ -73,7 +76,8 @@ fun FeaturedPager(
             displayMovie?.let {
                 HeroBanner(
                     movie = it,
-                    navController = navController
+                    navController = navController,
+                    authViewModel = authViewModel
                 )
             }
         }

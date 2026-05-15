@@ -72,11 +72,13 @@ fun ProfileScreen(
     val bebasNeue = FontFamily(Font(R.font.bebas_neue_regular))
 
     val userProfileState by authViewModel.userProfile.collectAsState()
+    val watchlistIds by authViewModel.watchlistIds.collectAsState()
     val notificationsEnabled = remember { mutableStateOf(true) }
     val subtitlesEnabled = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         authViewModel.getUserProfile()
+        authViewModel.getWatchlist()
     }
 
     Column(
@@ -97,7 +99,6 @@ fun ProfileScreen(
                     )
                 )
         ) {
-            // decorative gold circle
             Box(
                 modifier = Modifier
                     .size(200.dp)
@@ -106,7 +107,6 @@ fun ProfileScreen(
                     .align(Alignment.TopEnd)
             )
 
-            // Back button
             Box(
                 modifier = Modifier
                     .padding(top = 52.dp, start = 18.dp)
@@ -141,7 +141,6 @@ fun ProfileScreen(
                             .align(Alignment.Center)
                             .padding(top = 40.dp)
                     ) {
-                        // ── Avatar ──
                         Box {
                             Box(
                                 modifier = Modifier
@@ -163,7 +162,6 @@ fun ProfileScreen(
                                 )
                             }
 
-                            // edit button
                             Box(
                                 modifier = Modifier
                                     .size(26.dp)
@@ -183,7 +181,6 @@ fun ProfileScreen(
                             }
                         }
 
-                        // ── Name ──
                         Text(
                             text = user.userName.uppercase(),
                             fontFamily = bebasNeue,
@@ -192,7 +189,6 @@ fun ProfileScreen(
                             color = Color.White
                         )
 
-                        // ── Email ──
                         Text(
                             text = user.email,
                             fontSize = 12.sp,
@@ -213,7 +209,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ── STATS ROW ──
+        // ── STATS ROW (Now Dynamic) ──
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -222,16 +218,16 @@ fun ProfileScreen(
                 .background(surface)
                 .border(1.dp, Color.White.copy(alpha = 0.07f), RoundedCornerShape(16.dp))
         ) {
-            StatItem(value = "47", label = "Watched", modifier = Modifier.weight(1f))
+            StatItem(value = "0", label = "Watched", modifier = Modifier.weight(1f))
             StatDivider()
-            StatItem(value = "8", label = "Reviews", modifier = Modifier.weight(1f))
+            StatItem(value = "0", label = "Reviews", modifier = Modifier.weight(1f))
             StatDivider()
-            StatItem(value = "3", label = "Lists", modifier = Modifier.weight(1f))
+            // Using watchlist size for "Lists" count
+            StatItem(value = watchlistIds.size.toString(), label = "Watchlist", modifier = Modifier.weight(1f))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── ACCOUNT SECTION ──
         SectionLabel(title = "ACCOUNT", bebasNeue = bebasNeue, muted = muted)
 
         MenuCard {
@@ -268,7 +264,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ── PREFERENCES SECTION ──
         SectionLabel(title = "PREFERENCES", bebasNeue = bebasNeue, muted = muted)
 
         MenuCard {
@@ -303,7 +298,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ── SUPPORT SECTION ──
         SectionLabel(title = "SUPPORT", bebasNeue = bebasNeue, muted = muted)
 
         MenuCard {
@@ -337,7 +331,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── SIGN OUT ──
+        // ── SIGN OUT (Fixed with logout logic) ──
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -346,6 +340,7 @@ fun ProfileScreen(
                 .border(1.dp, Color(0xFFE24B4A).copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .background(Color(0xFFE24B4A).copy(alpha = 0.06f))
                 .clickable {
+                    authViewModel.logout()
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
@@ -373,7 +368,6 @@ fun ProfileScreen(
     }
 }
 
-// ── Stat Item ──
 @Composable
 fun StatItem(value: String, label: String, modifier: Modifier = Modifier) {
     val gold = gold
@@ -395,7 +389,6 @@ fun StatItem(value: String, label: String, modifier: Modifier = Modifier) {
     }
 }
 
-// ── Stat Divider ──
 @Composable
 fun StatDivider() {
     Box(
@@ -406,7 +399,6 @@ fun StatDivider() {
     )
 }
 
-// ── Section Label ──
 @Composable
 fun SectionLabel(title: String, bebasNeue: FontFamily, muted: Color) {
     Text(
@@ -419,7 +411,6 @@ fun SectionLabel(title: String, bebasNeue: FontFamily, muted: Color) {
     )
 }
 
-// ── Menu Card wrapper ──
 @Composable
 fun MenuCard(content: @Composable () -> Unit) {
     Column(
@@ -434,7 +425,6 @@ fun MenuCard(content: @Composable () -> Unit) {
     }
 }
 
-// ── Menu Divider ──
 @Composable
 fun MenuDivider() {
     Box(
@@ -446,7 +436,6 @@ fun MenuDivider() {
     )
 }
 
-// ── Menu Item ──
 @Composable
 fun MenuItem(
     icon: ImageVector,
@@ -498,7 +487,6 @@ fun MenuItem(
     }
 }
 
-// ── Switch Menu Item ──
 @Composable
 fun SwitchMenuItem(
     icon: ImageVector,
@@ -556,7 +544,6 @@ fun SwitchMenuItem(
     }
 }
 
-// ── Badge Menu Item ──
 @Composable
 fun BadgeMenuItem(
     icon: ImageVector,

@@ -3,16 +3,7 @@ package com.example.cineversemovieapp.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,7 +37,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
@@ -60,7 +50,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.cineversemovieapp.R
-import com.example.cineversemovieapp.components.AI_Movie_Finder
 import com.example.cineversemovieapp.components.SearchBar
 import com.example.cineversemovieapp.components.anime.AnimeRow
 import com.example.cineversemovieapp.components.bannerItems.FeaturedPager
@@ -85,7 +74,6 @@ fun HomeScreen(
     authViewModel: AuthViewModel = viewModel()
 ) {
     val bg = Color(0xFF0A0A0F)
-
     val movieViewModel: MovieViewModel = viewModel()
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
@@ -129,7 +117,8 @@ fun HomeScreen(
             MainContent(
                 movieViewModel = movieViewModel,
                 tmdbViewModel = tmdbViewModel,
-                navController = navController
+                navController = navController,
+                authViewModel = authViewModel
             )
         }
     }
@@ -138,7 +127,6 @@ fun HomeScreen(
 @Composable
 fun CineverseTopBar(navController: NavController) {
     val bebasNeue = FontFamily(Font(R.font.bebas_neue_regular))
-    val gold = gold
     val surfaceColor = Color(0xFF1A1A24)
     val bg = Color(0xFF0A0A0F)
 
@@ -227,10 +215,10 @@ fun CineverseTopBar(navController: NavController) {
 fun MainContent(
     movieViewModel: MovieViewModel,
     tmdbViewModel: TmdbViewModel,
-    navController: NavController
+    navController: NavController,
+    authViewModel: AuthViewModel
 ) {
     val bebasNeue = FontFamily(Font(R.font.bebas_neue_regular))
-    val gold = gold
     val purple = Color(0xFFa882e6)
 
     val genres = listOf(
@@ -256,8 +244,6 @@ fun MainContent(
     val upcomingState by tmdbViewModel.upcomingMovies.collectAsState()
     val searchState by tmdbViewModel.searchResults.collectAsState()
     val nowPlayingState by tmdbViewModel.nowPlaying.collectAsState()
-    val movieVideosState by tmdbViewModel.movieVideos.collectAsState()
-    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -318,9 +304,49 @@ fun MainContent(
             )
         }
 
-        AI_Movie_Finder(navController = navController)
+        // ── AI Movie Finder (Premium Shortcut) ──
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(
+                    Brush.horizontalGradient(listOf(gold.copy(alpha = 0.15f), Color(0xFF1A1A24)))
+                )
+                .border(1.dp, gold.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
+                .clickable { navController.navigate(Routes.AiRecommend.route) }
+                .padding(horizontal = 16.dp, vertical = 14.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.AutoAwesome,
+                    contentDescription = "AI Finder",
+                    tint = gold,
+                    modifier = Modifier.size(24.dp)
+                )
 
-        // ── Featured Today ──
+                Column {
+                    Text(
+                        text = "AI MOVIE FINDER",
+                        fontFamily = bebasNeue,
+                        fontSize = 16.sp,
+                        letterSpacing = 2.sp,
+                        color = Color.White
+                    )
+
+                    Text(
+                        text = "Describe what you're in the mood for",
+                        fontSize = 11.sp,
+                        color = Color(0xFF5E5C68),
+                        fontWeight = FontWeight.Light
+                    )
+                }
+            }
+        }
+
+        // ── Featured Today (With fallback to TMDB Now Playing) ──
         Text(
             buildAnnotatedString {
                 withStyle(
@@ -359,13 +385,15 @@ fun MainContent(
                 if (movies.isNotEmpty()) {
                     FeaturedPager(
                         movies = movies,
-                        navController = navController
+                        navController = navController,
+                        authViewModel = authViewModel
                     )
                 } else if (nowPlayingState is TmdbState.Success) {
                     val tmdbMovies = (nowPlayingState as TmdbState.Success).movies
                     FeaturedPager(
                         movies = tmdbMovies,
-                        navController = navController
+                        navController = navController,
+                        authViewModel = authViewModel
                     )
                 }
             }
@@ -452,408 +480,95 @@ fun MainContent(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // ── Trending Now ──
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = Color.White,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("TRENDING ") }
-                withStyle(
-                    SpanStyle(
-                        color = gold,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("NOW") }
-            }
-        )
-
+        // ── Movie Content Rows ──
+        SectionHeader("TRENDING", "NOW", bebasNeue)
         when (trendingState) {
-            is TmdbState.Loading -> CircularProgressIndicator(
-                color = gold,
-                strokeWidth = 2.dp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            is TmdbState.Success -> TrendingNowRow(
-                movies = (trendingState as TmdbState.Success).movies,
-                navController = navController
-            )
-
-            is TmdbState.Error -> Text(
-                text = "⚠ ${(trendingState as TmdbState.Error).message}",
-                color = Color(0xFFE84B4B),
-                fontSize = 13.sp
-            )
-
+            is TmdbState.Loading -> CircularProgressIndicator(color = gold, modifier = Modifier.padding(16.dp))
+            is TmdbState.Success -> TrendingNowRow((trendingState as TmdbState.Success).movies, navController)
+            is TmdbState.Error -> ErrorDisplay((trendingState as TmdbState.Error).message)
             else -> {}
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // ── Top Rated ──
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = Color.White,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("TOP ") }
-                withStyle(
-                    SpanStyle(
-                        color = gold,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("RATED") }
-            }
-        )
-
+        SectionHeader("TOP", "RATED", bebasNeue)
         when (topRatedState) {
-            is TmdbState.Loading -> CircularProgressIndicator(
-                color = gold,
-                strokeWidth = 2.dp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            is TmdbState.Success -> TrendingNowRow(
-                movies = (topRatedState as TmdbState.Success).movies,
-                navController = navController
-            )
-
-            is TmdbState.Error -> Text(
-                text = "⚠ ${(topRatedState as TmdbState.Error).message}",
-                color = Color(0xFFE84B4B),
-                fontSize = 13.sp
-            )
-
+            is TmdbState.Loading -> CircularProgressIndicator(color = gold, modifier = Modifier.padding(16.dp))
+            is TmdbState.Success -> TrendingNowRow((topRatedState as TmdbState.Success).movies, navController)
+            is TmdbState.Error -> ErrorDisplay((topRatedState as TmdbState.Error).message)
             else -> {}
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // ── Bollywood Hits ──
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = Color.White,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("BOLLYWOOD ") }
-                withStyle(
-                    SpanStyle(
-                        color = gold,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("HITS") }
-            }
-        )
-
+        SectionHeader("BOLLYWOOD", "HITS", bebasNeue)
         when (bollywoodState) {
-            is TmdbState.Loading -> CircularProgressIndicator(
-                color = gold,
-                strokeWidth = 2.dp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            is TmdbState.Success -> BollywoodRow(
-                movies = (bollywoodState as TmdbState.Success).movies,
-                navController = navController
-            )
-
-            is TmdbState.Error -> Text(
-                text = "⚠ ${(bollywoodState as TmdbState.Error).message}",
-                color = Color(0xFFE84B4B),
-                fontSize = 13.sp
-            )
-
+            is TmdbState.Loading -> CircularProgressIndicator(color = gold, modifier = Modifier.padding(16.dp))
+            is TmdbState.Success -> BollywoodRow((bollywoodState as TmdbState.Success).movies, navController)
+            is TmdbState.Error -> ErrorDisplay((bollywoodState as TmdbState.Error).message)
             else -> {}
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // ── Anime Collection ──
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = Color.White,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("ANIME ") }
-                withStyle(
-                    SpanStyle(
-                        color = purple,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("COLLECTION") }
-            }
-        )
-
+        SectionHeader("ANIME", "COLLECTION", bebasNeue, purple)
         when (animeState) {
-            is AnimeState.Loading -> CircularProgressIndicator(
-                color = purple,
-                strokeWidth = 2.dp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            is AnimeState.Success -> AnimeRow(
-                shows = (animeState as AnimeState.Success).shows,
-                navController = navController
-            )
-
-            is AnimeState.Error -> Text(
-                text = "⚠ ${(animeState as AnimeState.Error).message}",
-                color = Color(0xFFE84B4B),
-                fontSize = 13.sp
-            )
-
+            is AnimeState.Loading -> CircularProgressIndicator(color = purple, modifier = Modifier.padding(16.dp))
+            is AnimeState.Success -> AnimeRow((animeState as AnimeState.Success).shows, navController)
+            is AnimeState.Error -> ErrorDisplay((animeState as AnimeState.Error).message)
             else -> {}
         }
 
-        // ── Hollywood Classics ──
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = Color.White,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("HOLLYWOOD ") }
-                withStyle(
-                    SpanStyle(
-                        color = gold,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("CLASSICS") }
-            }
-        )
-
+        SectionHeader("HOLLYWOOD", "CLASSICS", bebasNeue)
         when (classicsState) {
-            is TmdbState.Loading -> CircularProgressIndicator(
-                color = gold,
-                strokeWidth = 2.dp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            is TmdbState.Success -> TrendingNowRow(
-                movies = (classicsState as TmdbState.Success).movies,
-                navController = navController
-            )
-
-            is TmdbState.Error -> Text(
-                text = "⚠ ${(classicsState as TmdbState.Error).message}",
-                color = Color(0xFFE84B4B),
-                fontSize = 13.sp
-            )
-
+            is TmdbState.Loading -> CircularProgressIndicator(color = gold, modifier = Modifier.padding(16.dp))
+            is TmdbState.Success -> TrendingNowRow((classicsState as TmdbState.Success).movies, navController)
+            is TmdbState.Error -> ErrorDisplay((classicsState as TmdbState.Error).message)
             else -> {}
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // ── Award Winners ──
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = Color.White,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("AWARD ") }
-                withStyle(
-                    SpanStyle(
-                        color = gold,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("WINNERS") }
-            }
-        )
-
+        SectionHeader("AWARD", "WINNERS", bebasNeue)
         when (awardState) {
-            is TmdbState.Loading -> CircularProgressIndicator(
-                color = gold,
-                strokeWidth = 2.dp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            is TmdbState.Success -> TrendingNowRow(
-                movies = (awardState as TmdbState.Success).movies,
-                navController = navController
-            )
-
-            is TmdbState.Error -> Text(
-                text = "⚠ ${(awardState as TmdbState.Error).message}",
-                color = Color(0xFFE84B4B),
-                fontSize = 13.sp
-            )
-
+            is TmdbState.Loading -> CircularProgressIndicator(color = gold, modifier = Modifier.padding(16.dp))
+            is TmdbState.Success -> TrendingNowRow((awardState as TmdbState.Success).movies, navController)
+            is TmdbState.Error -> ErrorDisplay((awardState as TmdbState.Error).message)
             else -> {}
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // ── K-Drama ──
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = Color.White,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("K ") }
-                withStyle(
-                    SpanStyle(
-                        color = gold,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("DRAMA") }
-            }
-        )
-
+        SectionHeader("K", "DRAMA", bebasNeue)
         when (kDramaState) {
-            is AnimeState.Loading -> CircularProgressIndicator(
-                color = gold,
-                strokeWidth = 2.dp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            is AnimeState.Success -> AnimeRow(
-                shows = (kDramaState as AnimeState.Success).shows,
-                navController = navController
-            )
-
-            is AnimeState.Error -> Text(
-                text = "⚠ ${(kDramaState as AnimeState.Error).message}",
-                color = Color(0xFFE84B4B),
-                fontSize = 13.sp
-            )
-
+            is AnimeState.Loading -> CircularProgressIndicator(color = gold, modifier = Modifier.padding(16.dp))
+            is AnimeState.Success -> AnimeRow((kDramaState as AnimeState.Success).shows, navController)
+            is AnimeState.Error -> ErrorDisplay((kDramaState as AnimeState.Error).message)
             else -> {}
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // ── Popular TV Shows ──
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = Color.White,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("POPULAR ") }
-                withStyle(
-                    SpanStyle(
-                        color = gold,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("TV SHOWS") }
-            }
-        )
-
+        SectionHeader("POPULAR", "TV SHOWS", bebasNeue)
         when (tvShowsState) {
-            is AnimeState.Loading -> CircularProgressIndicator(
-                color = gold,
-                strokeWidth = 2.dp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            is AnimeState.Success -> AnimeRow(
-                shows = (tvShowsState as AnimeState.Success).shows,
-                navController = navController
-            )
-
-            is AnimeState.Error -> Text(
-                text = "⚠ ${(tvShowsState as AnimeState.Error).message}",
-                color = Color(0xFFE84B4B),
-                fontSize = 13.sp
-            )
-
+            is AnimeState.Loading -> CircularProgressIndicator(color = gold, modifier = Modifier.padding(16.dp))
+            is AnimeState.Success -> AnimeRow((tvShowsState as AnimeState.Success).shows, navController)
+            is AnimeState.Error -> ErrorDisplay((tvShowsState as AnimeState.Error).message)
             else -> {}
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // ── Coming Soon ──
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        color = Color.White,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("COMING ") }
-                withStyle(
-                    SpanStyle(
-                        color = gold,
-                        fontFamily = bebasNeue,
-                        fontSize = 20.sp,
-                        letterSpacing = 2.sp
-                    )
-                ) { append("SOON") }
-            }
-        )
-
+        SectionHeader("COMING", "SOON", bebasNeue)
         when (upcomingState) {
-            is TmdbState.Loading -> CircularProgressIndicator(
-                color = gold,
-                strokeWidth = 2.dp,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            is TmdbState.Success -> TrendingNowRow(
-                movies = (upcomingState as TmdbState.Success).movies,
-                navController = navController
-            )
-
-            is TmdbState.Error -> Text(
-                text = "⚠ ${(upcomingState as TmdbState.Error).message}",
-                color = Color(0xFFE84B4B),
-                fontSize = 13.sp
-            )
-
+            is TmdbState.Loading -> CircularProgressIndicator(color = gold, modifier = Modifier.padding(16.dp))
+            is TmdbState.Success -> TrendingNowRow((upcomingState as TmdbState.Success).movies, navController)
+            is TmdbState.Error -> ErrorDisplay((upcomingState as TmdbState.Error).message)
             else -> {}
         }
-
     }
+}
+
+@Composable
+fun SectionHeader(word1: String, word2: String, fontFamily: FontFamily, color2: Color = gold) {
+    Text(
+        buildAnnotatedString {
+            withStyle(SpanStyle(color = Color.White, fontFamily = fontFamily, fontSize = 20.sp, letterSpacing = 2.sp)) { append("$word1 ") }
+            withStyle(SpanStyle(color = color2, fontFamily = fontFamily, fontSize = 20.sp, letterSpacing = 2.sp)) { append(word2) }
+        },
+        modifier = Modifier.padding(vertical = 4.dp)
+    )
+}
+
+@Composable
+fun ErrorDisplay(message: String) {
+    Text(text = "⚠ $message", color = Color(0xFFE84B4B), fontSize = 13.sp)
 }
 
 // ── Bottom Nav ──
@@ -862,7 +577,6 @@ fun BottomNavBar(
     navController: NavController,
     currentRoute: String?
 ) {
-    val gold = gold
     val bg = Color(0xFF111118)
     val muted = Color(0xFF5E5C68)
     val bebasNeue = FontFamily(Font(R.font.bebas_neue_regular))
@@ -871,135 +585,43 @@ fun BottomNavBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(bg)
-            .border(
-                width = 0.5.dp,
-                color = Color.White.copy(alpha = 0.07f),
-                shape = RoundedCornerShape(0.dp)
-            )
+            .border(width = 0.5.dp, color = Color.White.copy(alpha = 0.07f), shape = RoundedCornerShape(0.dp))
             .padding(top = 10.dp, bottom = 24.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Home
-        BottomNavItem(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Filled.Home,
-            label = "Home",
-            isSelected = currentRoute == Routes.Home.route,
-            gold = gold,
-            muted = muted,
-            bebasNeue = bebasNeue,
-            onClick = {
-                navController.navigate(Routes.Home.route) {
-                    popUpTo(Routes.Home.route) { inclusive = true }
-                }
-            }
-        )
-
-        // Search
-        BottomNavItem(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Filled.Search,
-            label = "Search",
-            isSelected = currentRoute == Routes.Search.route,
-            gold = gold,
-            muted = muted,
-            bebasNeue = bebasNeue,
-            onClick = { navController.navigate(Routes.Search.route) }
-        )
-
-        // Reels — center button
-        Box(
-            modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.Center
-        ) {
+        BottomNavItem(Modifier.weight(1f), Icons.Filled.Home, "Home", currentRoute == Routes.Home.route, gold, muted, bebasNeue) {
+            navController.navigate(Routes.Home.route) { popUpTo(Routes.Home.route) { inclusive = true } }
+        }
+        BottomNavItem(Modifier.weight(1f), Icons.Filled.Search, "Search", currentRoute == Routes.Search.route, gold, muted, bebasNeue) {
+            navController.navigate(Routes.Search.route)
+        }
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
             Box(
                 modifier = Modifier
                     .size(52.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        if (currentRoute == Routes.Reels.route)
-                            Brush.linearGradient(listOf(gold, Color(0xFFa87830)))
-                        else
-                            Brush.linearGradient(
-                                listOf(
-                                    Color(0xFF1A1A24),
-                                    Color(0xFF1A1A24)
-                                )
-                            )
-                    )
+                    .background(if (currentRoute == Routes.Reels.route) Brush.linearGradient(listOf(gold, Color(0xFFa87830))) else Brush.linearGradient(listOf(Color(0xFF1A1A24), Color(0xFF1A1A24))))
                     .clickable { navController.navigate(Routes.Reels.route) },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Filled.PlayArrow,
-                    contentDescription = "Reels",
-                    tint = if (currentRoute == Routes.Reels.route)
-                        Color(0xFF0A0A0F)
-                    else
-                        gold,
-                    modifier = Modifier.size(26.dp)
-                )
+                Icon(Icons.Filled.PlayArrow, "Reels", tint = if (currentRoute == Routes.Reels.route) Color(0xFF0A0A0F) else gold, modifier = Modifier.size(26.dp))
             }
         }
-
-        // Watchlist
-        BottomNavItem(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Filled.Bookmark,
-            label = "Watchlist",
-            isSelected = currentRoute == Routes.Watchlist.route,
-            gold = gold,
-            muted = muted,
-            bebasNeue = bebasNeue,
-            onClick = { navController.navigate(Routes.Watchlist.route) }
-        )
-
-        // Profile
-        BottomNavItem(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Filled.Person,
-            label = "Profile",
-            isSelected = currentRoute == Routes.Profile.route,
-            gold = gold,
-            muted = muted,
-            bebasNeue = bebasNeue,
-            onClick = { navController.navigate(Routes.Profile.route) }
-        )
+        BottomNavItem(Modifier.weight(1f), Icons.Filled.Bookmark, "Watchlist", currentRoute == Routes.Watchlist.route, gold, muted, bebasNeue) {
+            navController.navigate(Routes.Watchlist.route)
+        }
+        BottomNavItem(Modifier.weight(1f), Icons.Filled.Person, "Profile", currentRoute == Routes.Profile.route, gold, muted, bebasNeue) {
+            navController.navigate(Routes.Profile.route)
+        }
     }
 }
 
-// ── Single Nav Item ──
 @Composable
-fun BottomNavItem(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    label: String,
-    isSelected: Boolean,
-    gold: Color,
-    muted: Color,
-    bebasNeue: FontFamily,
-    onClick: () -> Unit
-) {
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier.clickable { onClick() }
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = if (isSelected) gold else muted,
-            modifier = Modifier.size(22.dp)
-        )
-        Text(
-            text = label,
-            fontSize = 10.sp,
-            color = if (isSelected) gold else muted,
-            fontFamily = bebasNeue,
-            letterSpacing = 0.5.sp
-        )
+fun BottomNavItem(modifier: Modifier = Modifier, icon: ImageVector, label: String, isSelected: Boolean, gold: Color, muted: Color, bebasNeue: FontFamily, onClick: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp), modifier = modifier.clickable { onClick() }) {
+        Icon(icon, label, tint = if (isSelected) gold else muted, modifier = Modifier.size(22.dp))
+        Text(label, fontSize = 10.sp, color = if (isSelected) gold else muted, fontFamily = bebasNeue, letterSpacing = 0.5.sp)
     }
 }
 
@@ -1007,19 +629,5 @@ fun BottomNavItem(
 @Composable
 fun CineverseTopBarPreview() {
     val navController = rememberNavController()
-    CineverseMovieAppTheme {
-        CineverseTopBar(navController = navController)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun BottomNavBarPreview() {
-    val navController = rememberNavController()
-    CineverseMovieAppTheme {
-        BottomNavBar(
-            navController = navController,
-            currentRoute = Routes.Home.route
-        )
-    }
+    CineverseMovieAppTheme { CineverseTopBar(navController = navController) }
 }
