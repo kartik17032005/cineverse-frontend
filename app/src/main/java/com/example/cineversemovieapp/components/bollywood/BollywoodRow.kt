@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.cineversemovieapp.data.TmdbMovie
+import com.example.cineversemovieapp.data.tmdb.TmdbMovie
 
 @Composable
 fun BollywoodRow(

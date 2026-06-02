@@ -37,7 +37,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.cineversemovieapp.R
-import com.example.cineversemovieapp.data.TmdbTvShow
+import com.example.cineversemovieapp.data.tmdb.TmdbTvShow
 import com.example.cineversemovieapp.navigation.Routes
 
 @Composable

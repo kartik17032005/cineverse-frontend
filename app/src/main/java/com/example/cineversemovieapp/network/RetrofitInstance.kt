@@ -1,5 +1,7 @@
-package com.example.cineversemovieapp.network.Auth
+package com.example.cineversemovieapp.network
 
+import com.example.cineversemovieapp.network.Auth.AuthApi
+import com.example.cineversemovieapp.network.Auth.AuthInterceptor
 import com.example.cineversemovieapp.utils.Constants
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

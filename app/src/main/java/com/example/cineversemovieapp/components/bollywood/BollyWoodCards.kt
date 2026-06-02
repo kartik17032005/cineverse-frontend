@@ -35,7 +35,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.cineversemovieapp.R
-import com.example.cineversemovieapp.data.TmdbMovie
+import com.example.cineversemovieapp.data.tmdb.TmdbMovie
 import com.example.cineversemovieapp.navigation.Routes
 import com.example.cineversemovieapp.ui.theme.gold
 

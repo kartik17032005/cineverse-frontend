@@ -1,4 +1,4 @@
-package com.example.cineversemovieapp.data
+package com.example.cineversemovieapp.data.tmdb
 
 import com.google.gson.annotations.SerializedName
 

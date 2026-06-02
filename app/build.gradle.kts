@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -7,11 +8,10 @@ android {
     namespace = "com.example.cineversemovieapp"
     compileSdk = 36
 
-
     defaultConfig {
         applicationId = "com.example.cineversemovieapp"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -43,58 +43,47 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
-
-    //extended icons
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
 
-    //navigation
+    // Navigation & Lifecycle
     implementation(libs.androidx.navigation.compose)
-
-    //viewmodel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
 
-    //retrofit
+    // Network
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
-
-    //okHttp
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
 
-    //coroutines
+    // Coroutines & UI Utils
     implementation(libs.kotlinx.coroutines.android)
-
-    //coil
     implementation(libs.coil.compose)
+    implementation(libs.lottie.compose)
+    implementation(libs.androidx.core.splashscreen)
 
-    // CameraX
+    // CameraX & ML Kit
     implementation(libs.camerax.core)
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
-
-    // ML Kit
     implementation(libs.mlkit.face)
-
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.room.ktx)
     implementation(libs.vision.common)
-
-    // The official splash screen backport — works on Android 5+
-    implementation(libs.androidx.core.splashscreen)
-
-    // Lottie for smooth, GPU-accelerated animations
-    implementation(libs.lottie.compose)
     
-    // YouTube Player
-    implementation(libs.youtube.player)
+    //vico used for creating line charts, bar charts etc
+    implementation(libs.compose)
+    implementation(libs.compose.m3)
 
-    //Media3
+    // Database
+    implementation(libs.androidx.room.ktx)
+
+    // Media & Video
+    implementation(libs.youtube.player)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui)
 
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

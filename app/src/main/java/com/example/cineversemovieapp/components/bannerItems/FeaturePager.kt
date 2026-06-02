@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.cineversemovieapp.data.TmdbMovie
+import com.example.cineversemovieapp.data.tmdb.TmdbMovie
 import com.example.cineversemovieapp.models.Movie
 import com.example.cineversemovieapp.ui.theme.gold
 import com.example.cineversemovieapp.viewmodel.AuthViewModel

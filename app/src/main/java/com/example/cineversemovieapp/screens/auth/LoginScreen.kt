@@ -1,4 +1,4 @@
-package com.example.cineversemovieapp.screens
+package com.example.cineversemovieapp.screens.auth
 
 import android.util.Patterns
 import androidx.compose.foundation.background

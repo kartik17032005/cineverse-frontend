@@ -1,6 +1,6 @@
 package com.example.cineversemovieapp.repository
 
-import com.example.cineversemovieapp.network.Auth.RetrofitInstance
+import com.example.cineversemovieapp.network.RetrofitInstance
 
 class MovieRepository {
     private val api = RetrofitInstance.api

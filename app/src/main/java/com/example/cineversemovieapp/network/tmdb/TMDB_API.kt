@@ -1,8 +1,8 @@
 package com.example.cineversemovieapp.network.tmdb
 
-import com.example.cineversemovieapp.data.TmdbCreditsResponse
-import com.example.cineversemovieapp.data.TmdbMovieDetail
-import com.example.cineversemovieapp.data.TmdbTvResponse
+import com.example.cineversemovieapp.data.tmdb.TmdbCreditsResponse
+import com.example.cineversemovieapp.data.tmdb.TmdbMovieDetail
+import com.example.cineversemovieapp.data.tmdb.TmdbTvResponse
 import com.example.cineversemovieapp.models.TmdbResponse
 import com.example.cineversemovieapp.models.TmdbVideosResponse
 import retrofit2.Response

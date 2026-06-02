@@ -1,8 +1,18 @@
-package com.example.cineversemovieapp.screens
+package com.example.cineversemovieapp.screens.auth
 
+import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -12,8 +22,24 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,6 +101,7 @@ fun RegisterScreen(navController: NavController) {
                     popUpTo("register") { inclusive = true }
                 }
             }
+
             else -> {}
         }
     }
@@ -214,7 +241,13 @@ fun RegisterScreen(navController: NavController) {
                         append("I agree to Cineverse's ")
                     }
                     pushStringAnnotation(tag = "TERMS", annotation = "")
-                    withStyle(SpanStyle(color = gold, fontSize = 13.sp, fontWeight = FontWeight.Bold)) {
+                    withStyle(
+                        SpanStyle(
+                            color = gold,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ) {
                         append("Terms of Service")
                     }
                     pop()
@@ -222,7 +255,13 @@ fun RegisterScreen(navController: NavController) {
                         append(" and ")
                     }
                     pushStringAnnotation(tag = "POLICY", annotation = "")
-                    withStyle(SpanStyle(color = gold, fontSize = 13.sp, fontWeight = FontWeight.Bold)) {
+                    withStyle(
+                        SpanStyle(
+                            color = gold,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ) {
                         append("Privacy Policy")
                     }
                     pop()
@@ -232,11 +271,19 @@ fun RegisterScreen(navController: NavController) {
                     text = annotatedTermsString,
                     style = TextStyle(fontFamily = FontFamily.Default),
                     onClick = { offset ->
-                        annotatedTermsString.getStringAnnotations(tag = "TERMS", start = offset, end = offset)
+                        annotatedTermsString.getStringAnnotations(
+                            tag = "TERMS",
+                            start = offset,
+                            end = offset
+                        )
                             .firstOrNull()?.let {
                                 showTermsSheet = true
                             }
-                        annotatedTermsString.getStringAnnotations(tag = "POLICY", start = offset, end = offset)
+                        annotatedTermsString.getStringAnnotations(
+                            tag = "POLICY",
+                            start = offset,
+                            end = offset
+                        )
                             .firstOrNull()?.let {
                                 showPrivacySheet = true
                             }
@@ -286,7 +333,11 @@ fun RegisterScreen(navController: NavController) {
                 )
             ) {
                 if (registerState is RegisterState.Loading) {
-                    CircularProgressIndicator(color = Color(0xFF101017), modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    CircularProgressIndicator(
+                        color = Color(0xFF101017),
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
                 } else {
                     Text(
                         text = "CREATE MY ACCOUNT",
@@ -300,6 +351,77 @@ fun RegisterScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(30.dp))
         }
+
+        // ── Bottom Sheets for Terms & Privacy ──
+        if (showTermsSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showTermsSheet = false },
+                containerColor = Color(0xFF1A1A24),
+                contentColor = Color.White
+            ) {
+                TermsContent(bebasNeue, gold)
+            }
+        }
+
+        if (showPrivacySheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showPrivacySheet = false },
+                containerColor = Color(0xFF1A1A24),
+                contentColor = Color.White
+            ) {
+                PrivacyContent(bebasNeue, gold)
+            }
+        }
+    }
+}
+
+@Composable
+fun TermsContent(fontFamily: FontFamily, gold: Color) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+            .padding(bottom = 32.dp)
+    ) {
+        Text(
+            text = "TERMS OF SERVICE",
+            fontFamily = fontFamily,
+            fontSize = 24.sp,
+            color = gold,
+            letterSpacing = 2.sp
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Welcome to Cineverse. By using our application, you agree to comply with and be bound by the following terms and conditions of use. Our service provides access to movie information, trailers, and personalized recommendations. You are responsible for maintaining the confidentiality of your account credentials. Cineverse reserves the right to terminate accounts that violate our community guidelines.",
+            color = Color.White.copy(alpha = 0.7f),
+            fontSize = 14.sp,
+            lineHeight = 22.sp
+        )
+    }
+}
+
+@Composable
+fun PrivacyContent(fontFamily: FontFamily, gold: Color) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+            .padding(bottom = 32.dp)
+    ) {
+        Text(
+            text = "PRIVACY POLICY",
+            fontFamily = fontFamily,
+            fontSize = 24.sp,
+            color = gold,
+            letterSpacing = 2.sp
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Your privacy is important to us. Cineverse collects minimal personal data such as your email and username to provide a personalized experience. We do not sell your data to third parties. We use industry-standard encryption to protect your information. By using Cineverse, you consent to our data collection practices as outlined in this policy.",
+            color = Color.White.copy(alpha = 0.7f),
+            fontSize = 14.sp,
+            lineHeight = 22.sp
+        )
     }
 }
 
@@ -337,7 +459,7 @@ fun validateRegisterForm(
     if (email.isBlank()) {
         emailError.value = "Email is required"
         isValid = false
-    } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+    } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
         emailError.value = "Invalid email address"
         isValid = false
     } else {

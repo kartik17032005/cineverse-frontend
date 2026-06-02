@@ -2,10 +2,10 @@ package com.example.cineversemovieapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cineversemovieapp.data.TmdbCastMember
-import com.example.cineversemovieapp.data.TmdbMovie
-import com.example.cineversemovieapp.data.TmdbMovieDetail
-import com.example.cineversemovieapp.data.TmdbTvShow
+import com.example.cineversemovieapp.data.tmdb.TmdbCastMember
+import com.example.cineversemovieapp.data.tmdb.TmdbMovie
+import com.example.cineversemovieapp.data.tmdb.TmdbMovieDetail
+import com.example.cineversemovieapp.data.tmdb.TmdbTvShow
 import com.example.cineversemovieapp.models.TmdbVideo
 import com.example.cineversemovieapp.repository.TmdbRepository
 import kotlinx.coroutines.flow.MutableStateFlow

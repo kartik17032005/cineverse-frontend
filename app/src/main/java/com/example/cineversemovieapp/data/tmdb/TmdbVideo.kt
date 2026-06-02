@@ -1,4 +1,4 @@
-package com.example.cineversemovieapp.data
+package com.example.cineversemovieapp.data.tmdb
 
 data class TmdbVideosResponse(
     val results: List<TmdbVideo>

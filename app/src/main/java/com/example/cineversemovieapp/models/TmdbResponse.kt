@@ -1,6 +1,6 @@
 package com.example.cineversemovieapp.models
 
-import com.example.cineversemovieapp.data.TmdbMovie
+import com.example.cineversemovieapp.data.tmdb.TmdbMovie
 
 data class TmdbResponse (
     val page: Int,

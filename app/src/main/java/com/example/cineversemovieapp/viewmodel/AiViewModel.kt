@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cineversemovieapp.models.AiMovieResult
 import com.example.cineversemovieapp.models.AiRecommendation
-import com.example.cineversemovieapp.network.Auth.RetrofitInstance
+import com.example.cineversemovieapp.network.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

@@ -4,7 +4,7 @@ import com.example.cineversemovieapp.models.AddWatchlistRequest
 import com.example.cineversemovieapp.models.LoginRequest
 import com.example.cineversemovieapp.models.RegisterRequest
 import com.example.cineversemovieapp.models.UpdateUserRequest
-import com.example.cineversemovieapp.network.Auth.RetrofitInstance
+import com.example.cineversemovieapp.network.RetrofitInstance
 
 class AuthRepository {
     private val api = RetrofitInstance.api

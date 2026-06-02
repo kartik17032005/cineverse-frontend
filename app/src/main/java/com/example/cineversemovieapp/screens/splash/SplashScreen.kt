@@ -1,4 +1,4 @@
-package com.example.cineversemovieapp.screens
+package com.example.cineversemovieapp.screens.splash
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas

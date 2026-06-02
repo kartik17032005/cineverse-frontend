@@ -9,7 +9,7 @@ import com.example.cineversemovieapp.models.RegisterRequest
 import com.example.cineversemovieapp.models.UpdateUserRequest
 import com.example.cineversemovieapp.models.UserResponse
 import com.example.cineversemovieapp.models.WatchlistItem
-import com.example.cineversemovieapp.network.Auth.RetrofitInstance
+import com.example.cineversemovieapp.network.RetrofitInstance
 import com.example.cineversemovieapp.repository.AuthRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

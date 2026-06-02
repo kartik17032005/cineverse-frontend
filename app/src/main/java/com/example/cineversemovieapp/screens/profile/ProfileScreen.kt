@@ -1,4 +1,4 @@
-package com.example.cineversemovieapp.screens
+package com.example.cineversemovieapp.screens.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.CircularProgressIndicator
@@ -57,13 +58,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.cineversemovieapp.R
+import com.example.cineversemovieapp.navigation.Routes
 import com.example.cineversemovieapp.ui.theme.gold
 import com.example.cineversemovieapp.viewmodel.AuthViewModel
+import com.example.cineversemovieapp.viewmodel.BadgeViewModel
 
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = viewModel(),
+    badgeViewModel: BadgeViewModel = viewModel()
 ) {
     val gold = gold
     val bg = Color(0xFF0A0A0F)
@@ -73,6 +77,9 @@ fun ProfileScreen(
 
     val userProfileState by authViewModel.userProfile.collectAsState()
     val watchlistIds by authViewModel.watchlistIds.collectAsState()
+    val badges by badgeViewModel.badges.collectAsState()
+    val unlockedCount = badges.count { it.isUnlocked }
+    
     val notificationsEnabled = remember { mutableStateOf(true) }
     val subtitlesEnabled = remember { mutableStateOf(false) }
 
@@ -169,7 +176,7 @@ fun ProfileScreen(
                                     .background(gold)
                                     .border(2.dp, bg, CircleShape)
                                     .align(Alignment.BottomEnd)
-                                    .clickable { navController.navigate("edit_profile") },
+                                    .clickable { navController.navigate(Routes.EditProfile.route) },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -209,7 +216,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ── STATS ROW (Now Dynamic) ──
+        // ── STATS ROW (Updated with Badges) ──
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -218,12 +225,11 @@ fun ProfileScreen(
                 .background(surface)
                 .border(1.dp, Color.White.copy(alpha = 0.07f), RoundedCornerShape(16.dp))
         ) {
-            StatItem(value = "0", label = "Watched", modifier = Modifier.weight(1f))
+            StatItem(value = watchlistIds.size.toString(), label = "Watchlist", modifier = Modifier.weight(1f))
+            StatDivider()
+            StatItem(value = unlockedCount.toString(), label = "Badges", modifier = Modifier.weight(1f))
             StatDivider()
             StatItem(value = "0", label = "Reviews", modifier = Modifier.weight(1f))
-            StatDivider()
-            // Using watchlist size for "Lists" count
-            StatItem(value = watchlistIds.size.toString(), label = "Watchlist", modifier = Modifier.weight(1f))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -238,7 +244,18 @@ fun ProfileScreen(
                 label = "Edit Profile",
                 sub = "Update your info",
                 onClick = {
-                    navController.navigate("edit_profile")
+                    navController.navigate(Routes.EditProfile.route)
+                }
+            )
+            MenuDivider()
+            MenuItem(
+                icon = Icons.Filled.Stars,
+                iconBg = Color(0xFF2E1A0A),
+                iconTint = gold,
+                label = "My Badges",
+                sub = "View your film achievements",
+                onClick = {
+                    navController.navigate(Routes.Badges.route)
                 }
             )
             MenuDivider()
@@ -341,7 +358,7 @@ fun ProfileScreen(
                 .background(Color(0xFFE24B4A).copy(alpha = 0.06f))
                 .clickable {
                     authViewModel.logout()
-                    navController.navigate("login") {
+                    navController.navigate(Routes.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 }

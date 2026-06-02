@@ -1,4 +1,4 @@
-package com.example.cineversemovieapp.screens
+package com.example.cineversemovieapp.screens.details
 
 import android.content.Intent
 import android.net.Uri
@@ -57,6 +57,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.cineversemovieapp.R
+import com.example.cineversemovieapp.components.SceneDNAButton
 import com.example.cineversemovieapp.navigation.Routes
 import com.example.cineversemovieapp.ui.theme.gold
 import com.example.cineversemovieapp.viewmodel.AuthViewModel
@@ -199,24 +200,18 @@ fun MovieDetailsScreen(
                             .border(1.dp, Color.White.copy(alpha = 0.12f), CircleShape)
                             .align(Alignment.TopEnd)
                             .clickable {
-                                // get movie details to pass to watchlist
-                                val movie = (movieDetailState as? MovieDetailState.Success)?.movie
-                                if (movie != null) {
-                                    if (isBookmarked) {
-                                        // remove from watchlist
-                                        authViewModel.removeFromWatchlist(movieId.toLong())
-                                    } else {
-                                        // add to watchlist
-                                        authViewModel.addToWatchlist(
-                                            tmdbId = movieId.toLong(),
-                                            title = movie.title ?: "",
-                                            posterUrl = movie.posterUrl,
-                                            backdropUrl = movie.backdropUrl,
-                                            rating = movie.rating,
-                                            releaseYear = movie.releaseYear,
-                                            genre = movie.genres.firstOrNull()?.name ?: "Movie"
-                                        )
-                                    }
+                                if (isBookmarked) {
+                                    authViewModel.removeFromWatchlist(movieId.toLong())
+                                } else {
+                                    authViewModel.addToWatchlist(
+                                        tmdbId = movieId.toLong(),
+                                        title = movie.title ?: "",
+                                        posterUrl = movie.posterUrl,
+                                        backdropUrl = movie.backdropUrl,
+                                        rating = movie.rating,
+                                        releaseYear = movie.releaseYear,
+                                        genre = movie.genres.firstOrNull()?.name ?: "Movie"
+                                    )
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -371,7 +366,16 @@ fun MovieDetailsScreen(
                                         )
                                     )
                                 )
-                                .clickable { },
+                                .clickable {
+                                    val videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                                    navController.navigate(
+                                        Routes.MoviePlayer.createRoute(
+                                            title = movie.title ?: "Movie",
+                                            year = movie.releaseYear,
+                                            url = videoUrl
+                                        )
+                                    )
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Row(
@@ -449,6 +453,11 @@ fun MovieDetailsScreen(
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // ── Scene DNA ──
+                    SceneDNAButton(movieId = movieId, navController = navController)
 
                     Spacer(modifier = Modifier.height(24.dp))
                     HorizontalDivider(color = Color.White.copy(alpha = 0.07f))
