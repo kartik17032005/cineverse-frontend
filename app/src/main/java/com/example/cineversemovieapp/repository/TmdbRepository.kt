@@ -16,20 +16,33 @@ class TmdbRepository {
 
     suspend fun getMoviesByGenre(genreId: Int) = api.getMoviesByGenre(apiKey, genreId)
 
-    suspend fun getBollyWoodMovies() = api.getBollywoodMovies(apiKey)
+    suspend fun getBollywoodMovies() = api.getBollywoodMovies(apiKey)
 
     suspend fun getAnimeShows() = api.getAnimeShows(apiKey)
 
-    suspend fun getHollywoodClassics() = api.getHollywoodClassics(apiKey)  // 👈 new
-    suspend fun getKDramas() = api.getKDramas(apiKey)                      // 👈 new
-    suspend fun getAwardWinners() = api.getAwardWinners(apiKey)            // 👈 new
-    suspend fun getNowPlaying() = api.getNowPlaying(apiKey)                // 👈 new
-    suspend fun getPopularTvShows() = api.getPopularTvShows(apiKey)        // 👈 new
+    suspend fun getHollywoodClassics() = api.getHollywoodClassics(apiKey)
+    suspend fun getKDramas() = api.getKDramas(apiKey)
+    suspend fun getAwardWinners() = api.getAwardWinners(apiKey)
+    suspend fun getNowPlaying() = api.getNowPlaying(apiKey)
+    suspend fun getPopularTvShows() = api.getPopularTvShows(apiKey)
     suspend fun getUpcomingMovies() = api.getUpcomingMovies(apiKey)
 
     suspend fun getMovieDetails(movieId: Int) = api.getMovieDetails(movieId, apiKey)
 
+    // ── TV Details ──
+    suspend fun getTvDetails(tvId: Int) = api.getTvDetails(tvId, apiKey)
+
     suspend fun getMovieCredits(movieId: Int) = api.getMovieCredits(movieId, apiKey)
 
+    // ── TV Credits ──
+    suspend fun getTvCredits(tvId: Int) = api.getTvCredits(tvId, apiKey)
+
     suspend fun getMovieVideos(movieId: Int) = api.getMovieVideos(movieId, apiKey)
+
+    // ── TV Videos ──
+    suspend fun getTvVideos(tvId: Int) = api.getTvVideos(tvId, apiKey)
+
+    suspend fun getMovieRecommendations(movieId: Int) = api.getMovieRecommendations(movieId, apiKey)
+
+    suspend fun getTvRecommendations(tvId: Int) = api.getTvRecommendations(tvId, apiKey)
 }

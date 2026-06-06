@@ -6,6 +6,7 @@ import com.example.cineversemovieapp.data.tmdb.TmdbCastMember
 import com.example.cineversemovieapp.data.tmdb.TmdbMovie
 import com.example.cineversemovieapp.data.tmdb.TmdbMovieDetail
 import com.example.cineversemovieapp.data.tmdb.TmdbTvShow
+import com.example.cineversemovieapp.data.tmdb.toTmdbMovie
 import com.example.cineversemovieapp.models.TmdbVideo
 import com.example.cineversemovieapp.repository.TmdbRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,63 +18,55 @@ class TmdbViewModel : ViewModel() {
 
     private val repository = TmdbRepository()
 
-    // ── Trending ──
     private val _trendingMovies = MutableStateFlow<TmdbState>(TmdbState.Idle)
     val trendingMovies: StateFlow<TmdbState> = _trendingMovies
 
-    // ── Top Rated ──
     private val _topRatedMovies = MutableStateFlow<TmdbState>(TmdbState.Idle)
     val topRatedMovies: StateFlow<TmdbState> = _topRatedMovies
 
-    // ── Search ──
     private val _searchResults = MutableStateFlow<TmdbState>(TmdbState.Idle)
     val searchResults: StateFlow<TmdbState> = _searchResults
 
-    //bollywood movies
     private val _bollywoodMovies = MutableStateFlow<TmdbState>(TmdbState.Idle)
     val bollywoodMovies: StateFlow<TmdbState> = _bollywoodMovies
 
-    //anime shows
     private val _animeShows = MutableStateFlow<AnimeState>(AnimeState.Idle)
     val animeShows: StateFlow<AnimeState> = _animeShows
 
-    // ── Hollywood Classics ──
     private val _hollywoodClassics = MutableStateFlow<TmdbState>(TmdbState.Idle)
     val hollywoodClassics: StateFlow<TmdbState> = _hollywoodClassics
 
-    // ── K-Drama ──
     private val _kDramas = MutableStateFlow<AnimeState>(AnimeState.Idle)
     val kDramas: StateFlow<AnimeState> = _kDramas
 
-    // ── Award Winners ──
     private val _awardWinners = MutableStateFlow<TmdbState>(TmdbState.Idle)
     val awardWinners: StateFlow<TmdbState> = _awardWinners
 
-    // ── Now Playing ──
     private val _nowPlaying = MutableStateFlow<TmdbState>(TmdbState.Idle)
     val nowPlaying: StateFlow<TmdbState> = _nowPlaying
 
-    // ── Popular TV Shows ──
     private val _popularTvShows = MutableStateFlow<AnimeState>(AnimeState.Idle)
     val popularTvShows: StateFlow<AnimeState> = _popularTvShows
 
-    // ── Upcoming ──
     private val _upcomingMovies = MutableStateFlow<TmdbState>(TmdbState.Idle)
     val upcomingMovies: StateFlow<TmdbState> = _upcomingMovies
 
     private val _movieCredits = MutableStateFlow<CreditsState>(CreditsState.Idle)
     val movieCredits: StateFlow<CreditsState> = _movieCredits
 
-    // ── Get Trending ──
+    private val _reelsMovies = MutableStateFlow<TmdbState>(TmdbState.Idle)
+    val reelsMovies: StateFlow<TmdbState> = _reelsMovies
+
+    private val _recommendations = MutableStateFlow<TmdbState>(TmdbState.Idle)
+    val recommendations: StateFlow<TmdbState> = _recommendations
+
     fun getTrendingMovies() {
         viewModelScope.launch {
             _trendingMovies.value = TmdbState.Loading
             try {
                 val response = repository.getTrendingMovies()
                 if (response.isSuccessful) {
-                    _trendingMovies.value = TmdbState.Success(
-                        response.body()?.results ?: emptyList()
-                    )
+                    _trendingMovies.value = TmdbState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _trendingMovies.value = TmdbState.Error("Failed to load trending")
                 }
@@ -83,16 +76,13 @@ class TmdbViewModel : ViewModel() {
         }
     }
 
-    // ── Get Top Rated ──
     fun getTopRatedMovies() {
         viewModelScope.launch {
             _topRatedMovies.value = TmdbState.Loading
             try {
                 val response = repository.getTopRatedMovies()
                 if (response.isSuccessful) {
-                    _topRatedMovies.value = TmdbState.Success(
-                        response.body()?.results ?: emptyList()
-                    )
+                    _topRatedMovies.value = TmdbState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _topRatedMovies.value = TmdbState.Error("Failed to load top rated")
                 }
@@ -102,16 +92,13 @@ class TmdbViewModel : ViewModel() {
         }
     }
 
-    // ── Search Movies ──
     fun searchMovies(query: String) {
         viewModelScope.launch {
             _searchResults.value = TmdbState.Loading
             try {
                 val response = repository.searchMovies(query)
                 if (response.isSuccessful) {
-                    _searchResults.value = TmdbState.Success(
-                        response.body()?.results ?: emptyList()
-                    )
+                    _searchResults.value = TmdbState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _searchResults.value = TmdbState.Error("Search failed")
                 }
@@ -127,9 +114,7 @@ class TmdbViewModel : ViewModel() {
             try {
                 val response = repository.getMoviesByGenre(genreId)
                 if (response.isSuccessful) {
-                    _searchResults.value = TmdbState.Success(
-                        response.body()?.results ?: emptyList()
-                    )
+                    _searchResults.value = TmdbState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _searchResults.value = TmdbState.Error("Failed to load movies for genre")
                 }
@@ -143,16 +128,13 @@ class TmdbViewModel : ViewModel() {
         _searchResults.value = TmdbState.Idle
     }
 
-    // --Bollywood movies--
     fun getBollywoodMovies() {
         viewModelScope.launch {
             _bollywoodMovies.value = TmdbState.Loading
             try {
-                val response = repository.getBollyWoodMovies()
+                val response = repository.getBollywoodMovies()
                 if (response.isSuccessful) {
-                    _bollywoodMovies.value = TmdbState.Success(
-                        response.body()?.results ?: emptyList()
-                    )
+                    _bollywoodMovies.value = TmdbState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _bollywoodMovies.value = TmdbState.Error("Failed to load bollywood movies")
                 }
@@ -162,16 +144,13 @@ class TmdbViewModel : ViewModel() {
         }
     }
 
-    // ANIME SHOWS
     fun getAnimeShows() {
         viewModelScope.launch {
             _animeShows.value = AnimeState.Loading
             try {
                 val response = repository.getAnimeShows()
                 if (response.isSuccessful) {
-                    _animeShows.value = AnimeState.Success(
-                        response.body()?.results ?: emptyList()
-                    )
+                    _animeShows.value = AnimeState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _animeShows.value = AnimeState.Error("Failed to load anime")
                 }
@@ -187,8 +166,7 @@ class TmdbViewModel : ViewModel() {
             try {
                 val response = repository.getHollywoodClassics()
                 if (response.isSuccessful) {
-                    _hollywoodClassics.value =
-                        TmdbState.Success(response.body()?.results ?: emptyList())
+                    _hollywoodClassics.value = TmdbState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _hollywoodClassics.value = TmdbState.Error("Failed to load classics")
                 }
@@ -252,8 +230,7 @@ class TmdbViewModel : ViewModel() {
             try {
                 val response = repository.getPopularTvShows()
                 if (response.isSuccessful) {
-                    _popularTvShows.value =
-                        AnimeState.Success(response.body()?.results ?: emptyList())
+                    _popularTvShows.value = AnimeState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _popularTvShows.value = AnimeState.Error("Failed to load TV shows")
                 }
@@ -269,8 +246,7 @@ class TmdbViewModel : ViewModel() {
             try {
                 val response = repository.getUpcomingMovies()
                 if (response.isSuccessful) {
-                    _upcomingMovies.value =
-                        TmdbState.Success(response.body()?.results ?: emptyList())
+                    _upcomingMovies.value = TmdbState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _upcomingMovies.value = TmdbState.Error("Failed to load upcoming")
                 }
@@ -283,35 +259,42 @@ class TmdbViewModel : ViewModel() {
     private val _movieDetail = MutableStateFlow<MovieDetailState>(MovieDetailState.Idle)
     val movieDetail: StateFlow<MovieDetailState> = _movieDetail
 
-    fun getMovieDetails(movieId: Int) {
+    fun getMovieDetails(id: Int, isTv: Boolean = false) {
         viewModelScope.launch {
             _movieDetail.value = MovieDetailState.Loading
             try {
-                val response = repository.getMovieDetails(movieId)
-                if (response.isSuccessful) {
-                    _movieDetail.value = MovieDetailState.Success(
-                        response.body()!!
-                    )
+                val response = if (isTv) {
+                    repository.getTvDetails(id)
                 } else {
-                    _movieDetail.value = MovieDetailState.Error("Failed to load movie")
+                    repository.getMovieDetails(id)
+                }
+                
+                if (response.isSuccessful && response.body() != null) {
+                    _movieDetail.value = MovieDetailState.Success(response.body()!!)
+                } else {
+                    val errorLabel = if (isTv) "TV Show" else "Movie"
+                    _movieDetail.value = MovieDetailState.Error("Failed to load $errorLabel details (Code: ${response.code()})")
                 }
             } catch (e: Exception) {
-                _movieDetail.value = MovieDetailState.Error(e.message ?: "Something went wrong")
+                _movieDetail.value = MovieDetailState.Error(e.message ?: "Network error occurred")
             }
         }
     }
 
-    fun getMovieCredits(movieId: Int) {
+    fun getMovieCredits(id: Int, isTv: Boolean = false) {
         viewModelScope.launch {
             _movieCredits.value = CreditsState.Loading
             try {
-                val response = repository.getMovieCredits(movieId)
-                if (response.isSuccessful) {
-                    _movieCredits.value = CreditsState.Success(
-                        response.body()?.cast?.take(10) ?: emptyList()
-                    )
+                val response = if (isTv) {
+                    repository.getTvCredits(id)
                 } else {
-                    _movieCredits.value = CreditsState.Error("Failed to load cast")
+                    repository.getMovieCredits(id)
+                }
+                
+                if (response.isSuccessful) {
+                    _movieCredits.value = CreditsState.Success(response.body()?.cast?.take(10) ?: emptyList())
+                } else {
+                    _movieCredits.value = CreditsState.Error("Failed to load credits")
                 }
             } catch (e: Exception) {
                 _movieCredits.value = CreditsState.Error(e.message ?: "Something went wrong")
@@ -322,28 +305,32 @@ class TmdbViewModel : ViewModel() {
     private val _movieVideos = MutableStateFlow<VideosState>(VideosState.Idle)
     val movieVideos: StateFlow<VideosState> = _movieVideos
     
-    // Map to store video keys per movie ID to avoid conflicts in Reels
     private val _reelsVideoKeys = MutableStateFlow<Map<Int, String>>(emptyMap())
     val reelsVideoKeys = _reelsVideoKeys.asStateFlow()
 
-    fun getMovieVideos(movieId: Int) {
+    fun getMovieVideos(id: Int, isTv: Boolean = false) {
         viewModelScope.launch {
             _movieVideos.value = VideosState.Loading
             try {
-                val response = repository.getMovieVideos(movieId)
+                val response = if (isTv) {
+                    repository.getTvVideos(id)
+                } else {
+                    repository.getMovieVideos(id)
+                }
+                
                 if (response.isSuccessful) {
                     val trailers = response.body()?.results
-                        ?.filter { it.site == "YouTube" && it.type == "Trailer" }
+                        ?.filter { it.site == "YouTube" && (it.type == "Trailer" || it.type == "Opening Credits" || it.type == "Teaser") }
                         ?: emptyList()
                     
                     val key = trailers.firstOrNull()?.key
                     if (key != null) {
-                        _reelsVideoKeys.value = _reelsVideoKeys.value + (movieId to key)
+                        _reelsVideoKeys.value += (id to key)
                     }
                     
                     _movieVideos.value = VideosState.Success(trailers)
                 } else {
-                    _movieVideos.value = VideosState.Error("Failed to load trailer")
+                    _movieVideos.value = VideosState.Error("Failed to load trailers")
                 }
             } catch (e: Exception) {
                 _movieVideos.value = VideosState.Error(e.message ?: "Something went wrong")
@@ -351,18 +338,14 @@ class TmdbViewModel : ViewModel() {
         }
     }
 
-    // ── Reels ──
-    private val _reelsMovies = MutableStateFlow<TmdbState>(TmdbState.Idle)
-    val reelsMovies: StateFlow<TmdbState> = _reelsMovies
-
     fun getReelsMovies(mood: String = "NEUTRAL") {
         val genreId = when (mood) {
-            "HAPPY"   -> 35   // Comedy
-            "SAD"     -> 18   // Drama
-            "SLEEPY"  -> 12   // Adventure
-            "EXCITED" -> 28   // Action
-            "NEUTRAL" -> 878  // Sci-Fi
-            else      -> 28   // Action default
+            "HAPPY"   -> 35   
+            "SAD"     -> 18   
+            "SLEEPY"  -> 12   
+            "EXCITED" -> 28   
+            "NEUTRAL" -> 878  
+            else      -> 28   
         }
 
         viewModelScope.launch {
@@ -370,14 +353,38 @@ class TmdbViewModel : ViewModel() {
             try {
                 val response = repository.getMoviesByGenre(genreId)
                 if (response.isSuccessful) {
-                    _reelsMovies.value = TmdbState.Success(
-                        response.body()?.results ?: emptyList()
-                    )
+                    _reelsMovies.value = TmdbState.Success(response.body()?.results ?: emptyList())
                 } else {
                     _reelsMovies.value = TmdbState.Error("Failed to load reels")
                 }
             } catch (e: Exception) {
                 _reelsMovies.value = TmdbState.Error(e.message ?: "Something went wrong")
+            }
+        }
+    }
+
+    fun getRecommendations(id: Int, isTv: Boolean = false) {
+        viewModelScope.launch {
+            _recommendations.value = TmdbState.Loading
+            try {
+                if (isTv) {
+                    val response = repository.getTvRecommendations(id)
+                    if (response.isSuccessful) {
+                        val movies = response.body()?.results?.map { it.toTmdbMovie() } ?: emptyList()
+                        _recommendations.value = TmdbState.Success(movies)
+                    } else {
+                        _recommendations.value = TmdbState.Error("Failed to load recommendations")
+                    }
+                } else {
+                    val response = repository.getMovieRecommendations(id)
+                    if (response.isSuccessful) {
+                        _recommendations.value = TmdbState.Success(response.body()?.results ?: emptyList())
+                    } else {
+                        _recommendations.value = TmdbState.Error("Failed to load recommendations")
+                    }
+                }
+            } catch (e: Exception) {
+                _recommendations.value = TmdbState.Error(e.message ?: "Something went wrong")
             }
         }
     }
@@ -400,9 +407,12 @@ class TmdbViewModel : ViewModel() {
     fun resetMovieCredits() {
         _movieCredits.value = CreditsState.Idle
     }
+
+    fun resetRecommendations() {
+        _recommendations.value = TmdbState.Idle
+    }
 }
 
-// ── States ──
 sealed class TmdbState {
     object Idle : TmdbState()
     object Loading : TmdbState()

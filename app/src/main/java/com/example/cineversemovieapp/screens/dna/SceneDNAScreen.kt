@@ -1,18 +1,35 @@
 package com.example.cineversemovieapp.screens.dna
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChatBubble
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Waves
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,9 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
@@ -35,10 +50,12 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.cineversemovieapp.R
 import com.example.cineversemovieapp.components.EmotionTag
-import com.example.cineversemovieapp.data.remote.dto.PeakMoment
-import com.example.cineversemovieapp.data.remote.dto.PacingRhythm
-import com.example.cineversemovieapp.data.remote.dto.EmotionBreakdownItem
+import com.example.cineversemovieapp.navigation.Routes
+import com.example.cineversemovieapp.screens.dna.components.EmotionBreakdownCard
 import com.example.cineversemovieapp.screens.dna.components.InfoCard
+import com.example.cineversemovieapp.screens.dna.components.IntensityCurveChart
+import com.example.cineversemovieapp.screens.dna.components.PacingRhythmCard
+import com.example.cineversemovieapp.screens.dna.components.PeakMomentsSection
 import com.example.cineversemovieapp.screens.dna.components.TagPill
 import com.example.cineversemovieapp.screens.dna.components.TopBar
 import com.example.cineversemovieapp.ui.theme.gold
@@ -140,10 +157,12 @@ fun SceneDNAScreen(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                movie.genres.take(3).forEach { genre ->
+                                movie.genres?.take(2)?.forEach { genre ->
                                     TagPill(
                                         tag = EmotionTag("", genre.name),
-                                        gold = goldColor, goldFaint = goldFaint, goldBorder = goldBorder
+                                        gold = goldColor,
+                                        goldFaint = goldFaint,
+                                        goldBorder = goldBorder
                                     )
                                 }
                             }
@@ -155,7 +174,9 @@ fun SceneDNAScreen(
 
                 // ── Stats Cards ──
                 val scenePoints = movieDNA?.sceneDNA ?: emptyList()
-                val avgIntensity = if (scenePoints.isNotEmpty()) scenePoints.map { it.intensity }.average().toInt() else 0
+                val avgIntensity =
+                    if (scenePoints.isNotEmpty()) scenePoints.map { it.intensity }.average()
+                        .toInt() else 0
                 val keyScenes = scenePoints.size
                 val peakMomentsCount = movieDNA?.peakMoments?.size ?: 0
 
@@ -163,9 +184,24 @@ fun SceneDNAScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    InfoCard(headerText = "Intensity Score", value = avgIntensity, modifier = Modifier.weight(1f))
-                    InfoCard(headerText = "Key Scenes", value = keyScenes, modifier = Modifier.weight(1f))
-                    InfoCard(headerText = "Peak Moments", value = peakMomentsCount, modifier = Modifier.weight(1f))
+                    InfoCard(
+                        headerText = "Intensity Score",
+                        value = avgIntensity,
+                        icon = Icons.Default.LocalFireDepartment,
+                        modifier = Modifier.weight(1f)
+                    )
+                    InfoCard(
+                        headerText = "Key Scenes",
+                        value = keyScenes,
+                        icon = Icons.Default.Movie,
+                        modifier = Modifier.weight(1f)
+                    )
+                    InfoCard(
+                        headerText = "Peak Moments",
+                        value = peakMomentsCount,
+                        icon = Icons.Default.Bolt,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -176,10 +212,41 @@ fun SceneDNAScreen(
                 IntensityCurveChart(
                     goldColor = goldColor,
                     dataPoints = scenePoints.map { it.intensity.toFloat() },
+                    labels = scenePoints.map { it.label },
                     duration = movieDuration
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = { navController.navigate(Routes.CompareDNA.createRoute(movieId)) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D1A15)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp),
+                    border = BorderStroke(1.dp, Color(0xFF60512B))
+                ) {
+                    Text(
+                        text = "Compare DNA with another movie    ",
+                        color = Color(0xFFC7A74B),
+                        fontSize = 15.sp,
+                    )
+
+                    Icon(
+                        imageVector = Icons.Default.KeyboardDoubleArrowRight,
+                        contentDescription = "Forward arrow",
+                        tint = Color(0xFFC7A74B)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // ── AI DNA Summary ──
+                if (movieDNA != null && movieDNA.summary.isNotEmpty()) {
+                    DnaSummaryCard(summary = movieDNA.summary)
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
 
                 // ── Emotion Breakdown ──
                 SectionLabel(text = "EMOTION BREAKDOWN", fontFamily = bebasNeue)
@@ -205,7 +272,7 @@ fun SceneDNAScreen(
                     PacingRhythmCard(goldColor, rhythm)
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(40.dp))
             }
         }
     }
@@ -223,285 +290,34 @@ private fun SectionLabel(text: String, fontFamily: FontFamily) {
 }
 
 @Composable
-fun IntensityCurveChart(goldColor: Color, dataPoints: List<Float>, duration: String) {
-    if (dataPoints.isEmpty()) return
-
-    val totalMinutes = duration.filter { it.isDigit() }.toIntOrNull() ?: 120
-    val timeLabels = listOf(
-        "0 min",
-        "${totalMinutes / 4} min",
-        "${totalMinutes / 2} min",
-        "${(totalMinutes * 3) / 4} min",
-        "$totalMinutes min"
-    )
-
-    Card(
-        modifier = Modifier.fillMaxWidth().height(220.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF14141A)),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
-    ) {
-        Column {
-            Canvas(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
-            ) {
-                val w = size.width
-                val h = size.height
-                val maxVal = 100f
-                val minVal = 0f
-                val range = maxVal - minVal
-
-                fun xOf(i: Int) = i * w / (dataPoints.size - 1)
-                fun yOf(v: Float) = h - ((v - minVal) / range) * h
-
-                val linePath = Path()
-                if (dataPoints.size > 1) {
-                    linePath.moveTo(xOf(0), yOf(dataPoints[0]))
-                    for (i in 1 until dataPoints.size) {
-                        val cpX = (xOf(i - 1) + xOf(i)) / 2f
-                        linePath.cubicTo(
-                            cpX, yOf(dataPoints[i - 1]),
-                            cpX, yOf(dataPoints[i]),
-                            xOf(i), yOf(dataPoints[i])
-                        )
-                    }
-                }
-
-                val fillPath = Path()
-                if (!linePath.isEmpty) {
-                    fillPath.addPath(linePath)
-                    fillPath.lineTo(xOf(dataPoints.size - 1), h)
-                    fillPath.lineTo(xOf(0), h)
-                    fillPath.close()
-
-                    drawPath(
-                        path = fillPath,
-                        brush = Brush.verticalGradient(
-                            colors = listOf(goldColor.copy(alpha = 0.2f), Color.Transparent),
-                            startY = 0f, endY = h
-                        )
-                    )
-
-                    drawPath(
-                        path = linePath,
-                        color = goldColor,
-                        style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-                    )
-                }
-            }
-            
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                timeLabels.forEach { label ->
-                    Text(
-                        text = label,
-                        color = Color.White.copy(alpha = 0.25f),
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun EmotionBreakdownCard(goldColor: Color, items: List<EmotionBreakdownItem>) {
+fun DnaSummaryCard(summary: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF14141A)),
         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            items.forEach { emotion ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = emotion.label,
-                        color = Color.White.copy(alpha = 0.6f),
-                        fontSize = 12.sp,
-                        modifier = Modifier.width(80.dp),
-                        fontWeight = FontWeight.Medium
-                    )
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(20.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Color.White.copy(alpha = 0.03f))
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth(emotion.percentage.toFloat() / 100f)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(goldColor.copy(alpha = 0.7f))
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "${emotion.percentage}%",
-                        color = Color.White.copy(alpha = 0.4f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                if (emotion != items.lastOrNull()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            // X-Axis labels (0%, 10%, etc)
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(start = 80.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                listOf("0%", "10%", "20%", "30%", "40%", "50%").forEach { label ->
-                    Text(
-                        text = label,
-                        color = Color.White.copy(alpha = 0.2f),
-                        fontSize = 10.sp
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun PeakMomentsSection(peakMoments: List<PeakMoment>, goldColor: Color) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        peakMoments.forEach { moment ->
-            val icon = when {
-                moment.type.contains("Tension", true) || moment.title.contains("wave", true) -> Icons.Default.Waves
-                moment.type.contains("Action", true) || moment.title.contains("storm", true) -> Icons.Default.Language
-                else -> Icons.Default.ChatBubble
-            }
-            PeakMomentItem(moment, icon, goldColor)
-        }
-    }
-}
-
-@Composable
-fun PeakMomentItem(moment: PeakMoment, icon: ImageVector, goldColor: Color) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF14141A)),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
-    ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.05f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = goldColor.copy(alpha = 0.7f),
-                    modifier = Modifier.size(20.dp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "🧠 AI INSIGHT",
+                    color = gold,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
                 )
             }
-            Spacer(modifier = Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = moment.title,
-                    color = Color.White,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "min ${moment.minute} · ${moment.type}",
-                    color = Color.White.copy(alpha = 0.4f),
-                    fontSize = 11.sp
-                )
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = "${moment.intensity}%",
-                    color = goldColor,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "intensity",
-                    color = Color.White.copy(alpha = 0.3f),
-                    fontSize = 9.sp
-                )
-            }
-        }
-    }
-}
 
-@Composable
-fun PacingRhythmCard(goldColor: Color, rhythm: PacingRhythm) {
-    val stats = listOf(
-        "Action" to rhythm.action,
-        "Drama" to rhythm.drama,
-        "Buildup" to rhythm.buildup,
-        "Calm" to rhythm.calm
-    )
+            Spacer(modifier = Modifier.height(8.dp))
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF14141A)),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
-    ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            stats.forEach { (label, value) ->
-                val fraction = value.toFloat() / 100f
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
-                ) {
-                    Text(
-                        text = label,
-                        color = Color.White.copy(alpha = 0.6f),
-                        fontSize = 12.sp,
-                        modifier = Modifier.width(75.dp),
-                        fontWeight = FontWeight.Medium
-                    )
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color.White.copy(alpha = 0.04f))
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth(fraction.coerceIn(0.05f, 1f))
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(goldColor)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "$value%",
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            Text(
+                text = summary,
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 13.sp,
+                lineHeight = 20.sp
+            )
         }
     }
 }

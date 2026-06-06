@@ -7,9 +7,11 @@ sealed class Routes(val route: String) {
     object Login: Routes("login")
     object Register: Routes("register")
     object Home: Routes("home")
-    object MovieDetail : Routes("movie_detail/{movieId}") {
-        fun createRoute(movieId: Int) = "movie_detail/$movieId"
+    
+    object MovieDetail : Routes("movie_detail/{movieId}/{isTv}") {
+        fun createRoute(movieId: Int, isTv: Boolean = false) = "movie_detail/$movieId/$isTv"
     }
+
     object Profile: Routes("profile")
     object AiRecommend: Routes("ai_recommend")
     object Search: Routes("search")
@@ -28,5 +30,13 @@ sealed class Routes(val route: String) {
 
     object SceneDNA : Routes("scene_dna/{movieId}") {
         fun createRoute(movieId: Int) = "scene_dna/$movieId"
+    }
+
+    object CompareDNA : Routes("compare_dna/{movieId}") {
+        fun createRoute(movieId: Int) = "compare_dna/$movieId"
+    }
+
+    object RealCompareDNA: Routes("real_compare_dna/{baseMovieId}/{targetMovieId}"){
+        fun createRoute(baseMovieId: Int, targetMovieId: Int) = "real_compare_dna/$baseMovieId/$targetMovieId"
     }
 }

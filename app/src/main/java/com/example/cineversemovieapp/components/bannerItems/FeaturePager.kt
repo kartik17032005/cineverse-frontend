@@ -37,11 +37,13 @@ fun FeaturedPager(
     LaunchedEffect(pagerState) {
         while (true) {
             delay(3000)
-            val nextPage = (pagerState.settledPage + 1) % movies.size
-            pagerState.animateScrollToPage(
-                page = nextPage,
-                animationSpec = tween(durationMillis = 600)
-            )
+            if (movies.isNotEmpty()) {
+                val nextPage = (pagerState.settledPage + 1) % movies.size
+                pagerState.animateScrollToPage(
+                    page = nextPage,
+                    animationSpec = tween(durationMillis = 600)
+                )
+            }
         }
     }
 
@@ -58,10 +60,10 @@ fun FeaturedPager(
                 is TmdbMovie -> Movie(
                     movieId = movieItem.id.toLong(),
                     title = movieItem.displayTitle,
-                    description = movieItem.overview,
+                    description = movieItem.overview ?: "",
                     posterUrl = movieItem.posterUrl,
                     releaseYear = movieItem.releaseYear.toIntOrNull() ?: 0,
-                    rating = movieItem.voteAverage,
+                    rating = movieItem.voteAverage ?: 0.0,
                     genre = movieItem.getGenreName(),
                     duration = "2h", // Default
                     trailerKey = "",

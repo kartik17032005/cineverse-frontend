@@ -8,7 +8,7 @@ data class TmdbMovie(
     val id: Int,
     val title: String?,
     val name: String?,
-    val overview: String,
+    val overview: String?,
 
     @SerializedName("poster_path")
     val posterPath: String?,
@@ -19,29 +19,35 @@ data class TmdbMovie(
     @SerializedName("release_date")
     val releaseDate: String?,
 
+    @SerializedName("first_air_date")
+    val firstAirDate: String?,
+
     @SerializedName("vote_average")
-    val voteAverage: Double,
+    val voteAverage: Double?,
 
     @SerializedName("genre_ids")
-    val genreIds: List<Int>
+    val genreIds: List<Int>?,
+
+    @SerializedName("media_type")
+    val mediaType: String?
 ) {
     val displayTitle: String
         get() = title ?: name ?: "Unknown"
 
     val posterUrl: String
-        get() = "${Constants.TMDB_IMAGE_BASE_URL}$posterPath"
+        get() = if (posterPath != null) "${Constants.TMDB_IMAGE_BASE_URL}$posterPath" else ""
 
     val backdropUrl: String
-        get() = "${Constants.TMDB_BACKDROP_BASE_URL}$backdropPath"
+        get() = if (backdropPath != null) "${Constants.TMDB_BACKDROP_BASE_URL}$backdropPath" else ""
 
     val releaseYear: String
-        get() = releaseDate?.take(4) ?: ""
+        get() = (releaseDate ?: firstAirDate)?.take(4) ?: ""
 
     val rating: String
-        get() = "%.1f".format(voteAverage)
+        get() = "%.1f".format(voteAverage ?: 0.0)
 
     fun getGenreName(): String {
-        return when (genreIds.firstOrNull()) {
+        return when (genreIds?.firstOrNull()) {
             28 -> "ACTION"
             12 -> "ADVENTURE"
             16 -> "ANIMATION"
@@ -65,7 +71,7 @@ data class TmdbMovie(
         }
     }
 }
-// add at bottom of TmdbMovie.kt
+
 fun TmdbMovie.toReelItem(): ReelVideo {
     return ReelVideo(
         movieId = id,
@@ -73,11 +79,10 @@ fun TmdbMovie.toReelItem(): ReelVideo {
         backdropUrl = backdropUrl,
         posterUrl = posterUrl,
         rating = rating,
-        genre = getGenreName(), // ✅ FIXED
-        overview = overview,
+        genre = getGenreName(),
+        overview = overview ?: "",
         year = releaseYear,
-        videoUrl = null,       // 🔥 for ExoPlayer (we'll map later)
-        trailerKey = null      // 🔥 for YouTube fallback
+        videoUrl = null,
+        trailerKey = null
     )
 }
-

@@ -66,8 +66,9 @@ fun AnimeCard(
                     shape = RoundedCornerShape(14.dp)
                 )
                 .clickable {
+                    // Navigate with isTv = true since these are TV shows/Anime
                     navController.navigate(
-                        Routes.MovieDetail.createRoute(show.id)
+                        Routes.MovieDetail.createRoute(show.id, isTv = true)
                     )
                 }
         ) {

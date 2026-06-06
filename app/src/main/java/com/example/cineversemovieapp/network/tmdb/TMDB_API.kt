@@ -21,7 +21,8 @@ interface TMDB_API {
         @Query("api_key") apiKey: String
     ): Response<TmdbResponse>
 
-    @GET("search/movie")
+    // ── Use Multi Search to find both Movies and Animes/TV Shows ──
+    @GET("search/multi")
     suspend fun searchMovies(
         @Query("api_key") apiKey: String,
         @Query("query") query: String
@@ -39,16 +40,22 @@ interface TMDB_API {
         @Query("api_key") apiKey: String
     ): Response<TmdbVideosResponse>
 
+    // ── TV Videos ──
+    @GET("tv/{tv_id}/videos")
+    suspend fun getTvVideos(
+        @Path("tv_id") tvId: Int,
+        @Query("api_key") apiKey: String
+    ): Response<TmdbVideosResponse>
+
     //BOLLYWOOD MOVIES
     @GET("discover/movie")
     suspend fun getBollywoodMovies(
         @Query("api_key") apiKey: String,
-        @Query("with_original_language") language: String = "hi",  //--> HINDI
-        @Query("region") region: String = "IN", //--> India
-        @Query("sort_by") sortBy: String = "popularity.desc" //---> Most Popular First
+        @Query("with_original_language") language: String = "hi",
+        @Query("region") region: String = "IN",
+        @Query("sort_by") sortBy: String = "popularity.desc"
     ): Response<TmdbResponse>
 
-    //Anime
     // ── Anime Shows ──
     @GET("discover/tv")
     suspend fun getAnimeShows(
@@ -58,8 +65,6 @@ interface TMDB_API {
         @Query("sort_by") sortBy: String = "popularity.desc"
     ): Response<TmdbTvResponse>
 
-
-    // ── Hollywood Classics ──
     @GET("discover/movie")
     suspend fun getHollywoodClassics(
         @Query("api_key") apiKey: String,
@@ -70,7 +75,6 @@ interface TMDB_API {
         @Query("vote_count.gte") minVotes: Int = 1000
     ): Response<TmdbResponse>
 
-    // ── K-Drama ──
     @GET("discover/tv")
     suspend fun getKDramas(
         @Query("api_key") apiKey: String,
@@ -78,7 +82,6 @@ interface TMDB_API {
         @Query("sort_by") sortBy: String = "popularity.desc"
     ): Response<TmdbTvResponse>
 
-    // ── Award Winners ──
     @GET("discover/movie")
     suspend fun getAwardWinners(
         @Query("api_key") apiKey: String,
@@ -87,19 +90,16 @@ interface TMDB_API {
         @Query("vote_average.gte") minRating: Double = 8.0
     ): Response<TmdbResponse>
 
-    // ── Now Playing ──
     @GET("movie/now_playing")
     suspend fun getNowPlaying(
         @Query("api_key") apiKey: String
     ): Response<TmdbResponse>
 
-    // ── Popular TV Shows ──
     @GET("tv/popular")
     suspend fun getPopularTvShows(
         @Query("api_key") apiKey: String
     ): Response<TmdbTvResponse>
 
-    // ── Upcoming Movies ──
     @GET("movie/upcoming")
     suspend fun getUpcomingMovies(
         @Query("api_key") apiKey: String
@@ -111,9 +111,35 @@ interface TMDB_API {
         @Query("api_key") apiKey: String
     ): Response<TmdbMovieDetail>
 
+    // ── TV Details ──
+    @GET("tv/{tv_id}")
+    suspend fun getTvDetails(
+        @Path("tv_id") tvId: Int,
+        @Query("api_key") apiKey: String
+    ): Response<TmdbMovieDetail>
+
     @GET("movie/{movie_id}/credits")
     suspend fun getMovieCredits(
         @Path("movie_id") movieId: Int,
         @Query("api_key") apiKey: String
     ): Response<TmdbCreditsResponse>
+
+    // ── TV Credits ──
+    @GET("tv/{tv_id}/credits")
+    suspend fun getTvCredits(
+        @Path("tv_id") tvId: Int,
+        @Query("api_key") apiKey: String
+    ): Response<TmdbCreditsResponse>
+
+    @GET("movie/{movie_id}/recommendations")
+    suspend fun getMovieRecommendations(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): Response<TmdbResponse>
+
+    @GET("tv/{tv_id}/recommendations")
+    suspend fun getTvRecommendations(
+        @Path("tv_id") tvId: Int,
+        @Query("api_key") apiKey: String
+    ): Response<TmdbTvResponse>
 }

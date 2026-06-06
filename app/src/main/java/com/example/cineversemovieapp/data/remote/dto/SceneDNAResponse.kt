@@ -4,7 +4,8 @@ data class MovieDNA(
     val sceneDNA: List<ScenePoint>,
     val peakMoments: List<PeakMoment>,
     val pacingRhythm: PacingRhythm,
-    val emotionBreakdown: List<EmotionBreakdownItem>
+    val emotionBreakdown: List<EmotionBreakdownItem>,
+    val summary: String = ""
 )
 
 data class ScenePoint(

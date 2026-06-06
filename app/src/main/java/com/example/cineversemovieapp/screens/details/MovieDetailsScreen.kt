@@ -69,6 +69,7 @@ import com.example.cineversemovieapp.viewmodel.TmdbViewModel
 @Composable
 fun MovieDetailsScreen(
     movieId: Int,
+    isTv: Boolean = false,
     navController: NavController,
     tmdbViewModel: TmdbViewModel = viewModel(),
     authViewModel: AuthViewModel = viewModel()
@@ -79,24 +80,22 @@ fun MovieDetailsScreen(
     val movieDetailState by tmdbViewModel.movieDetail.collectAsState()
     val movieCreditsState by tmdbViewModel.movieCredits.collectAsState()
     val movieVideosState by tmdbViewModel.movieVideos.collectAsState()
+    val recommendationsState by tmdbViewModel.recommendations.collectAsState()
     val watchlistIds by authViewModel.watchlistIds.collectAsState()
     val isBookmarked = watchlistIds.contains(movieId.toLong())
     val context = LocalContext.current
 
-    LaunchedEffect(movieId) {
+    LaunchedEffect(movieId, isTv) {
         tmdbViewModel.resetMovieDetail()
         tmdbViewModel.resetMovieCredits()
         tmdbViewModel.resetMovieVideos()
-        tmdbViewModel.getMovieDetails(movieId)
-        tmdbViewModel.getMovieCredits(movieId)
-        tmdbViewModel.getMovieVideos(movieId)
+        tmdbViewModel.resetRecommendations()
+        tmdbViewModel.getMovieDetails(movieId, isTv)
+        tmdbViewModel.getMovieCredits(movieId, isTv)
+        tmdbViewModel.getMovieVideos(movieId, isTv)
+        tmdbViewModel.getRecommendations(movieId, isTv)
         authViewModel.getWatchlist()
     }
-
-    val trendingState by tmdbViewModel.trendingMovies.collectAsState()
-    val similarMovies = (trendingState as? TmdbState.Success)?.movies
-        ?.filter { it.id != movieId }
-        ?.take(10) ?: emptyList()
 
     when (movieDetailState) {
         is MovieDetailState.Loading,
@@ -150,7 +149,7 @@ fun MovieDetailsScreen(
                             .data(movie.backdropUrl)
                             .crossfade(true)
                             .build(),
-                        contentDescription = movie.title,
+                        contentDescription = movie.displayTitle,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -205,12 +204,12 @@ fun MovieDetailsScreen(
                                 } else {
                                     authViewModel.addToWatchlist(
                                         tmdbId = movieId.toLong(),
-                                        title = movie.title ?: "",
+                                        title = movie.displayTitle,
                                         posterUrl = movie.posterUrl,
                                         backdropUrl = movie.backdropUrl,
                                         rating = movie.rating,
                                         releaseYear = movie.releaseYear,
-                                        genre = movie.genres.firstOrNull()?.name ?: "Movie"
+                                        genre = movie.genres?.firstOrNull()?.name ?: "Movie"
                                     )
                                 }
                             },
@@ -254,25 +253,27 @@ fun MovieDetailsScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(0.dp)
                     ) {
-                        items(movie.genres.take(3)) { genre ->
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(100.dp))
-                                    .border(
-                                        1.dp,
-                                        gold.copy(alpha = 0.3f),
-                                        RoundedCornerShape(100.dp)
+                        movie.genres?.take(3)?.let { genres ->
+                            items(genres) { genre ->
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(100.dp))
+                                        .border(
+                                            1.dp,
+                                            gold.copy(alpha = 0.3f),
+                                            RoundedCornerShape(100.dp)
+                                        )
+                                        .background(gold.copy(alpha = 0.08f))
+                                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = genre.name.uppercase(),
+                                        fontSize = 11.sp,
+                                        color = gold,
+                                        fontWeight = FontWeight.Medium,
+                                        letterSpacing = 0.5.sp
                                     )
-                                    .background(gold.copy(alpha = 0.08f))
-                                    .padding(horizontal = 12.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = genre.name.uppercase(),
-                                    fontSize = 11.sp,
-                                    color = gold,
-                                    fontWeight = FontWeight.Medium,
-                                    letterSpacing = 0.5.sp
-                                )
+                                }
                             }
                         }
                     }
@@ -281,7 +282,7 @@ fun MovieDetailsScreen(
 
                     // ── Title ──
                     Text(
-                        text = (movie.title ?: "Unknown").uppercase(),
+                        text = (movie.displayTitle).uppercase(),
                         fontFamily = bebasNeue,
                         fontSize = 36.sp,
                         letterSpacing = 3.sp,
@@ -370,7 +371,7 @@ fun MovieDetailsScreen(
                                     val videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
                                     navController.navigate(
                                         Routes.MoviePlayer.createRoute(
-                                            title = movie.title ?: "Movie",
+                                            title = movie.displayTitle,
                                             year = movie.releaseYear,
                                             url = videoUrl
                                         )
@@ -459,6 +460,32 @@ fun MovieDetailsScreen(
                     // ── Scene DNA ──
                     SceneDNAButton(movieId = movieId, navController = navController)
 
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // ── Compare DNA Button ──
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color.White.copy(alpha = 0.05f))
+                            .border(1.dp, gold.copy(alpha = 0.2f), RoundedCornerShape(14.dp))
+                            .clickable { navController.navigate(Routes.CompareDNA.createRoute(movieId)) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "COMPARE SCENE DNA",
+                                fontFamily = bebasNeue,
+                                fontSize = 16.sp,
+                                color = gold,
+                                letterSpacing = 2.sp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "🔥", fontSize = 16.sp)
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(24.dp))
                     HorizontalDivider(color = Color.White.copy(alpha = 0.07f))
                     Spacer(modifier = Modifier.height(20.dp))
@@ -484,7 +511,7 @@ fun MovieDetailsScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = movie.overview.ifEmpty { "No overview available." },
+                        text = movie.overview?.ifEmpty { "No overview available." } ?: "No overview available.",
                         fontSize = 13.sp,
                         color = muted,
                         lineHeight = 22.sp,
@@ -561,6 +588,104 @@ fun MovieDetailsScreen(
                     HorizontalDivider(color = Color.White.copy(alpha = 0.07f))
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // ── COMPARE DNA (Dynamic Section) ──
+                    Row {
+                        Text(
+                            text = "COMPARE ",
+                            fontFamily = bebasNeue,
+                            fontSize = 18.sp,
+                            color = Color.White,
+                            letterSpacing = 2.sp
+                        )
+                        Text(
+                            text = "DNA",
+                            fontFamily = bebasNeue,
+                            fontSize = 18.sp,
+                            color = gold,
+                            letterSpacing = 2.sp
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    when (recommendationsState) {
+                        is TmdbState.Loading -> {
+                            Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = gold)
+                            }
+                        }
+                        is TmdbState.Success -> {
+                            val recommendations = (recommendationsState as TmdbState.Success).movies
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                items(recommendations) { rec ->
+                                    Box(
+                                        modifier = Modifier
+                                            .width(110.dp)
+                                            .height(160.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                                            .clickable {
+                                                navController.navigate(Routes.CompareDNA.createRoute(movieId))
+                                            }
+                                    ) {
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(rec.posterUrl)
+                                                .crossfade(true)
+                                                .build(),
+                                            contentDescription = rec.displayTitle,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(
+                                                    Brush.verticalGradient(
+                                                        colors = listOf(
+                                                            Color.Transparent,
+                                                            Color.Black.copy(alpha = 0.8f)
+                                                        )
+                                                    )
+                                                )
+                                        )
+
+                                        Column(
+                                            modifier = Modifier
+                                                .align(Alignment.BottomStart)
+                                                .padding(8.dp)
+                                        ) {
+                                            Text(
+                                                text = rec.displayTitle,
+                                                fontSize = 10.sp,
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                            Text(
+                                                text = "COMPARE",
+                                                fontSize = 8.sp,
+                                                color = gold,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                letterSpacing = 1.sp
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else -> {}
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.07f))
+                    Spacer(modifier = Modifier.height(20.dp))
+
                     // ── More Like This ──
                     Row {
                         Text(
@@ -580,6 +705,11 @@ fun MovieDetailsScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
+
+                    val trendingState by tmdbViewModel.trendingMovies.collectAsState()
+                    val similarMovies = (trendingState as? TmdbState.Success)?.movies
+                        ?.filter { it.id != movieId }
+                        ?.take(10) ?: emptyList()
 
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),

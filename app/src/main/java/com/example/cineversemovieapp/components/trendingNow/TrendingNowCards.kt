@@ -49,39 +49,34 @@ fun TrendingNowCard(
 
     Column(
         modifier = Modifier
-            .width(170.dp) // 👈 wider looks better
+            .width(170.dp)
             .padding(3.dp)
     ) {
         Card(
             modifier = Modifier
-                .width(180.dp)
+                .fillMaxWidth()
                 .height(250.dp)
                 .clickable {
                     navController.navigate(
-                        Routes.MovieDetail.createRoute(movie.id)
+                        Routes.MovieDetail.createRoute(
+                            movie.id,
+                            isTv = movie.mediaType == "tv" || movie.title == null
+                        )
                     )
                 },
-
             shape = RoundedCornerShape(12.dp),
             elevation = CardDefaults.cardElevation(6.dp),
             colors = CardDefaults.cardColors(containerColor = surface)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-
-                // ── Poster image goes here later ──
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(movie.posterUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = movie.title,
+                    contentDescription = movie.displayTitle,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
-
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
                 )
 
                 // ── Rank badge (top left) ──
@@ -119,12 +114,12 @@ fun TrendingNowCard(
                             imageVector = Icons.Filled.Star,
                             contentDescription = "Rating",
                             tint = gold,
-                            modifier = Modifier.size(10.dp)  // 👈 proper size
+                            modifier = Modifier.size(10.dp)
                         )
                         Text(
                             text = movie.rating,
                             color = gold,
-                            fontSize = 10.sp,               // 👈 readable size
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -134,7 +129,7 @@ fun TrendingNowCard(
 
         // ── Title below card ──
         Text(
-            text = movie.title.toString(),
+            text = movie.displayTitle,
             color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
@@ -145,9 +140,7 @@ fun TrendingNowCard(
                 .padding(top = 6.dp)
         )
 
-
         // ── Genre below title ──
-
         Text(
             text = "${movie.getGenreName()} ${movie.releaseYear}",
             color = Color(0xFF5E5C68),

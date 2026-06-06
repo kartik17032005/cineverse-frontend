@@ -11,6 +11,7 @@ data class TmdbTvResponse(
 data class TmdbTvShow(
     val id: Int,
     val name: String?,
+    val overview: String?,
 
     @SerializedName("poster_path")
     val posterPath: String?,
@@ -67,4 +68,20 @@ data class TmdbTvShow(
             else -> "ANIME"
         }
     }
+}
+
+fun TmdbTvShow.toTmdbMovie(): TmdbMovie {
+    return TmdbMovie(
+        id = id,
+        title = null,
+        name = name,
+        overview = overview,
+        posterPath = posterPath,
+        backdropPath = backdropPath,
+        releaseDate = null,
+        firstAirDate = firstAirDate,
+        voteAverage = voteAverage,
+        genreIds = genreIds,
+        mediaType = "tv"
+    )
 }

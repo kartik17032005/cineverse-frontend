@@ -357,7 +357,8 @@ fun RegisterScreen(navController: NavController) {
             ModalBottomSheet(
                 onDismissRequest = { showTermsSheet = false },
                 containerColor = Color(0xFF1A1A24),
-                contentColor = Color.White
+                contentColor = Color.White,
+                tonalElevation = 8.dp
             ) {
                 TermsContent(bebasNeue, gold)
             }
@@ -367,7 +368,8 @@ fun RegisterScreen(navController: NavController) {
             ModalBottomSheet(
                 onDismissRequest = { showPrivacySheet = false },
                 containerColor = Color(0xFF1A1A24),
-                contentColor = Color.White
+                contentColor = Color.White,
+                tonalElevation = 8.dp
             ) {
                 PrivacyContent(bebasNeue, gold)
             }
@@ -382,6 +384,7 @@ fun TermsContent(fontFamily: FontFamily, gold: Color) {
             .fillMaxWidth()
             .padding(24.dp)
             .padding(bottom = 32.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Text(
             text = "TERMS OF SERVICE",
@@ -391,12 +394,13 @@ fun TermsContent(fontFamily: FontFamily, gold: Color) {
             letterSpacing = 2.sp
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Welcome to Cineverse. By using our application, you agree to comply with and be bound by the following terms and conditions of use. Our service provides access to movie information, trailers, and personalized recommendations. You are responsible for maintaining the confidentiality of your account credentials. Cineverse reserves the right to terminate accounts that violate our community guidelines.",
-            color = Color.White.copy(alpha = 0.7f),
-            fontSize = 14.sp,
-            lineHeight = 22.sp
-        )
+        
+        LegalSection("1. Acceptance of Terms", "By creating an account or using Cineverse, you agree to these Terms. If you do not agree, please do not use the service.")
+        LegalSection("2. User Accounts", "You are responsible for safeguarding your password and any activities under your account. You must be at least 13 years old to use this service.")
+        LegalSection("3. Service Content", "Cineverse provides movie metadata, trailers, and discovery tools. Most content is provided via the TMDB API. We do not host copyrighted movies on our servers.")
+        LegalSection("4. Intellectual Property", "The 'Scene DNA' and application design are intellectual property of Cineverse. You may not reproduce or distribute any part of the service without permission.")
+        LegalSection("5. Prohibited Conduct", "You agree not to use automated systems to scrape data, attempt to bypass security measures, or use the service for any illegal purposes.")
+        LegalSection("6. Limitation of Liability", "Cineverse is provided 'as is'. We are not liable for any damages arising from your use of the application or the unavailability of third-party APIs.")
     }
 }
 
@@ -407,6 +411,7 @@ fun PrivacyContent(fontFamily: FontFamily, gold: Color) {
             .fillMaxWidth()
             .padding(24.dp)
             .padding(bottom = 32.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Text(
             text = "PRIVACY POLICY",
@@ -416,11 +421,31 @@ fun PrivacyContent(fontFamily: FontFamily, gold: Color) {
             letterSpacing = 2.sp
         )
         Spacer(modifier = Modifier.height(16.dp))
+        
+        LegalSection("1. Information We Collect", "We collect your email, username, and encrypted password for account management. We also track 'Watchlist' and 'Badges' to provide your personalized experience.")
+        LegalSection("2. Use of Information", "Your data is used solely to provide and improve the Cineverse experience. We use your movie preferences to generate tailored recommendations.")
+        LegalSection("3. Third-Party Services", "We utilize the TMDB API for movie information and potentially Firebase for authentication and data storage. These services may have their own privacy policies.")
+        LegalSection("4. Data Protection", "We use industry-standard encryption (SSL/TLS) to protect your personal information during transmission and storage.")
+        LegalSection("5. Data Sharing", "Cineverse does not sell or share your personal data with third-party advertisers. We only share data when required by law.")
+        LegalSection("6. Your Rights", "You have the right to access, update, or delete your personal data at any time via the Profile settings in the application.")
+    }
+}
+
+@Composable
+fun LegalSection(title: String, content: String) {
+    Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
-            text = "Your privacy is important to us. Cineverse collects minimal personal data such as your email and username to provide a personalized experience. We do not sell your data to third parties. We use industry-standard encryption to protect your information. By using Cineverse, you consent to our data collection practices as outlined in this policy.",
+            text = title,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = content,
             color = Color.White.copy(alpha = 0.7f),
-            fontSize = 14.sp,
-            lineHeight = 22.sp
+            fontSize = 13.sp,
+            lineHeight = 20.sp
         )
     }
 }

@@ -7,9 +7,11 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.cineversemovieapp.screens.*
 import com.example.cineversemovieapp.screens.ai.AiRecommendScreen
 import com.example.cineversemovieapp.screens.badge.CineBadgesScreen
@@ -18,6 +20,8 @@ import com.example.cineversemovieapp.screens.home.HomeScreen
 import com.example.cineversemovieapp.screens.auth.LoginScreen
 import com.example.cineversemovieapp.screens.auth.RegisterScreen
 import com.example.cineversemovieapp.screens.dna.SceneDNAScreen
+import com.example.cineversemovieapp.screens.dna.compareDNA.CompareDNAScreen
+import com.example.cineversemovieapp.screens.dna.compareDNA.DNAComparisonScreen
 import com.example.cineversemovieapp.screens.player.MoviePlayerScreen
 import com.example.cineversemovieapp.screens.profile.EditProfileScreen
 import com.example.cineversemovieapp.screens.profile.ProfileScreen
@@ -95,12 +99,19 @@ fun MovieNavigation() {
             )
         }
 
-        composable(Routes.MovieDetail.route) { backStackEntry ->
-            val movieId = backStackEntry.arguments
-                ?.getString("movieId")
-                ?.toIntOrNull() ?: 0
+        composable(
+            route = Routes.MovieDetail.route,
+            arguments = listOf(
+                navArgument("movieId") { type = NavType.StringType },
+                navArgument("isTv") { type = NavType.BoolType; defaultValue = false }
+            )
+        ) { backStackEntry ->
+            val movieIdStr = backStackEntry.arguments?.getString("movieId") ?: "0"
+            val movieId = movieIdStr.toIntOrNull() ?: 0
+            val isTv = backStackEntry.arguments?.getBoolean("isTv") ?: false
             MovieDetailsScreen(
                 movieId = movieId,
+                isTv = isTv,
                 navController = navController,
                 tmdbViewModel = tmdbViewModel,
                 authViewModel = authViewModel
@@ -171,14 +182,41 @@ fun MovieNavigation() {
         }
 
         composable(Routes.SceneDNA.route) { backStackEntry ->
-            val movieId = backStackEntry.arguments
-                ?.getString("movieId")
-                ?.toIntOrNull() ?: 0
+            val movieIdStr = backStackEntry.arguments?.getString("movieId") ?: "0"
+            val movieId = movieIdStr.toIntOrNull() ?: 0
             SceneDNAScreen(
                 movieId = movieId,
                 navController = navController,
                 viewModel = sceneDNAViewModel,
                 tmdbViewModel = tmdbViewModel
+            )
+        }
+
+        composable(Routes.CompareDNA.route) { backStackEntry ->
+            val movieIdStr = backStackEntry.arguments?.getString("movieId") ?: "0"
+            val movieId = movieIdStr.toIntOrNull() ?: 0
+            CompareDNAScreen(
+                movieId = movieId,
+                navController = navController,
+                tmdbViewModel = tmdbViewModel
+            )
+        }
+
+        composable(
+            route = Routes.RealCompareDNA.route,
+            arguments = listOf(
+                navArgument("baseMovieId") { type = NavType.IntType },
+                navArgument("targetMovieId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val baseMovieId = backStackEntry.arguments?.getInt("baseMovieId") ?: 0
+            val targetMovieId = backStackEntry.arguments?.getInt("targetMovieId") ?: 0
+            DNAComparisonScreen(
+                baseMovieId = baseMovieId,
+                targetMovieId = targetMovieId,
+                navController = navController,
+                tmdbViewModel = tmdbViewModel,
+                sceneDNAViewModel = sceneDNAViewModel
             )
         }
     }

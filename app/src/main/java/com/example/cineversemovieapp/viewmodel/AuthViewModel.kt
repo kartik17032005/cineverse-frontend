@@ -202,7 +202,8 @@ class AuthViewModel : ViewModel() {
         backdropUrl: String,
         rating: String,
         releaseYear: String,
-        genre: String
+        genre: String,
+        isTv: Boolean = false
     ) {
         viewModelScope.launch {
             _watchlistActionState.value = WatchlistActionState.Loading
@@ -216,7 +217,8 @@ class AuthViewModel : ViewModel() {
                         backdropUrl = backdropUrl,
                         rating = rating,
                         releaseYear = releaseYear,
-                        genre = genre
+                        genre = genre,
+                        isTv = isTv
                     )
                 )
                 if (response.isSuccessful) {

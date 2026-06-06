@@ -111,7 +111,7 @@ fun ReelsScreen(
                             title = movie.displayTitle,
                             rating = movie.rating,
                             genre = movie.getGenreName(),
-                            overview = movie.overview,
+                            overview = movie.overview ?: "",
                             year = movie.releaseYear,
                             backdropUrl = movie.backdropUrl,
                             isLiked = likedMovies.contains(movie.id),

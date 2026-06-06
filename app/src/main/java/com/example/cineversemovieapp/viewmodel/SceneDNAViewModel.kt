@@ -56,18 +56,18 @@ class SceneDNAViewModel : ViewModel() {
 
     private fun isGenericPlaceholder(dna: MovieDNA): Boolean {
         if (dna.sceneDNA.size < 5) return true
-        val firstVal = dna.sceneDNA.first().intensity
-        return dna.sceneDNA.all { it.intensity == firstVal }
+        val firstIntensity = dna.sceneDNA.first().intensity
+        return dna.sceneDNA.all { it.intensity == firstIntensity }
     }
 
-    private fun generateUniqueMovieDNA(movieId: Long): MovieDNA {
+    fun generateUniqueMovieDNA(movieId: Long): MovieDNA {
         val random = Random(movieId)
         
-        // 1. Scene DNA Points
-        val points = 25 + random.nextInt(15)
+        // 1. Generate unique Scene DNA Points for the graph
+        val pointsCount = 25 + random.nextInt(15)
         val sceneLabels = listOf("Action", "Suspense", "Drama", "Tragedy", "Euphoria", "Mystery")
-        val sceneDNA = List(points) { i ->
-            val intensity = if (i % 7 == 0) 80 + random.nextInt(20) else 20 + random.nextInt(60)
+        val sceneDNA = List(pointsCount) { i ->
+            val intensity = if (i % 7 == 0) 80 + random.nextInt(20) else 15 + random.nextInt(65)
             ScenePoint(label = sceneLabels[random.nextInt(sceneLabels.size)], intensity = intensity)
         }
 
@@ -85,39 +85,40 @@ class SceneDNAViewModel : ViewModel() {
         val sortedBreakdown = emotionBreakdown.sortedByDescending { it.percentage }
 
         // 3. Peak Moments
-        val peakMoments = if (movieId == 157336L) {
-            listOf(
-                PeakMoment("Water planet wave", 52, "Tension peak", 94),
-                PeakMoment("Docking in storm", 104, "Action peak", 98),
-                PeakMoment("Tesseract finale", 148, "Emotional peak", 91)
+        val pool = listOf(
+            "Final Confrontation", "The Revelation", "Chase Sequence", 
+            "Emotional Goodbye", "Unexpected Betrayal", "Hero's Journey",
+            "Climactic Battle", "The Silent Walk", "Midnight Escape", "Discovery"
+        ).shuffled(random)
+        
+        val peakMoments = List(3) { i ->
+            PeakMoment(
+                title = pool[i % pool.size],
+                minute = 30 + (i * 40) + random.nextInt(20),
+                type = listOf("Action peak", "Tension peak", "Emotional peak", "Suspense peak")[random.nextInt(4)],
+                intensity = 88 + random.nextInt(12)
             )
-        } else {
-            val pool = listOf(
-                "Final Confrontation", "The Revelation", "Chase Sequence", 
-                "Emotional Goodbye", "Unexpected Betrayal", "Hero's Journey",
-                "Climactic Battle", "The Silent Walk", "Midnight Escape", "Discovery"
-            ).shuffled(random)
-            List(3) { i ->
-                PeakMoment(
-                    title = pool[i % pool.size],
-                    minute = 30 + (i * 40) + random.nextInt(20),
-                    type = listOf("Action peak", "Tension peak", "Emotional peak", "Suspense peak")[random.nextInt(4)],
-                    intensity = 88 + random.nextInt(12)
-                )
-            }.sortedBy { it.minute }
-        }
+        }.sortedBy { it.minute }
 
         // 4. Pacing Rhythm
-        val a = if (movieId == 157336L) 38 else 25 + random.nextInt(20)
-        val d = if (movieId == 157336L) 32 else 20 + random.nextInt(20)
-        val b = if (movieId == 157336L) 20 else 10 + random.nextInt(20)
-        val c = if (movieId == 157336L) 10 else (100 - (a + d + b)).coerceAtLeast(5)
+        val a = 25 + random.nextInt(20)
+        val d = 20 + random.nextInt(20)
+        val b = 10 + random.nextInt(20)
+        val c = (100 - (a + d + b)).coerceAtLeast(5)
+
+        // 5. Generate Summary
+        val topEmotions = sortedBreakdown.take(2).joinToString(" and ") { it.label }
+        val mainPeak = peakMoments.maxByOrNull { it.intensity }?.title ?: "climactic moments"
+        val rhythmType = if (a > d) "high-tension emotional" else "deeply atmospheric"
+        
+        val summary = "This movie maintains a $rhythmType rhythm, dominated by $topEmotions. Major intensity spikes occur during the $mainPeak."
 
         return MovieDNA(
             sceneDNA = sceneDNA,
             peakMoments = peakMoments,
             pacingRhythm = PacingRhythm(action = a, drama = d, buildup = b, calm = c),
-            emotionBreakdown = sortedBreakdown
+            emotionBreakdown = sortedBreakdown,
+            summary = summary
         )
     }
 }
